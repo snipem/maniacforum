@@ -20,6 +20,14 @@ type Thread struct {
 type Message struct {
 	Content string
 	Link    string
+	Topic   string
+	Date    string
+	Author  User
+}
+
+type User struct {
+	Name string
+	Id   int
 }
 
 func GetMessage(resource string) Message {
