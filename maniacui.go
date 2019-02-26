@@ -6,7 +6,8 @@ package main
 
 import (
 	"log"
-	"lokal/maniacui/board"
+
+	"github.com/snipem/maniacforum/board"
 
 	ui "github.com/gizak/termui"
 	"github.com/gizak/termui/widgets"
