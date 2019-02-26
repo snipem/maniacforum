@@ -39,7 +39,7 @@ func GetMessage(resource string) Message {
 	})
 
 	doc.Find("table").Each(func(i int, s *goquery.Selection) {
-		m.Content = s.Find("font").Text()
+		// m.Topic = s.Find("font").Text()
 	})
 	return m
 }
