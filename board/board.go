@@ -44,6 +44,8 @@ func GetThread(id string) Thread {
 		m.Topic = s.Find("a > font").Text()
 		m.Hiearachy = s.ParentsFiltered("ul").Length()
 		m.Link, _ = s.Find("a").Attr("href")
+		m.Author.Name = strings.TrimSpace(s.Find("span").Find("span").Text())
+		// m.Date = s.Find("span > font").Text()
 
 		t.Messages = append(t.Messages, m)
 	})

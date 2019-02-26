@@ -34,8 +34,8 @@ func main() {
 		l.Rows = append(l.Rows, thread.Title)
 	}
 
-	l.TextStyle = ui.NewStyle(ui.ColorYellow)
-	beitraege.TextStyle = ui.NewStyle(ui.ColorYellow)
+	l.TextStyle = ui.NewStyle(ui.ColorRed)
+	beitraege.TextStyle = ui.NewStyle(ui.ColorRed)
 	l.WrapText = false
 	// l.SetRect(0, 0, 30, 50)
 	// t.SetRect(30, 20, 100, 40)
@@ -72,9 +72,11 @@ func main() {
 		case "j":
 			beitraege.ScrollDown()
 			message := board.GetMessage(innerThreads.Messages[beitraege.SelectedRow].Link)
-			t.Text = message.Content
+			t.Text = strings.Replace(message.Content, ">", "[>](fg:red)", -1)
 		case "k":
 			beitraege.ScrollUp()
+			message := board.GetMessage(innerThreads.Messages[beitraege.SelectedRow].Link)
+			t.Text = strings.Replace(message.Content, ">", "[>](fg:red)", -1)
 		case "<Enter>":
 			// log.Fatalf(threads[l.SelectedRow].Link)
 			message := board.GetMessage(threads[l.SelectedRow].Link)
@@ -83,7 +85,7 @@ func main() {
 			beitraege.Rows = nil
 			beitraege.SelectedRow = 0
 			for _, message := range innerThreads.Messages {
-				beitraege.Rows = append(beitraege.Rows, strings.Repeat("    ", message.Hiearachy-1)+ "○ " + message.Topic)
+				beitraege.Rows = append(beitraege.Rows, strings.Repeat("    ", message.Hiearachy-1)+ "○ " + message.Topic + " " + message.Date + " " +  message.Author.Name)
 			}
 			t.Text = message.Content
 			// t.Text = "test"
