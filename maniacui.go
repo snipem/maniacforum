@@ -33,7 +33,7 @@ func main() {
 	l.TextStyle = ui.NewStyle(ui.ColorYellow)
 	l.WrapText = false
 	l.SetRect(0, 0, 60, 40)
-	t.SetRect(70, 0, 180, 50)
+	t.SetRect(70, 20, 180, 40)
 
 	ui.Render(l)
 	ui.Render(t)
