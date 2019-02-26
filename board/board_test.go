@@ -5,6 +5,15 @@ import (
 	"strings"
 )
 
+func TestThread(t *testing.T) {
+	thread := GetThread("173448")
+	if len(thread.Messages) == 0 {
+		t.Errorf("No messages returned")
+	}
+	t.Log(thread.Messages)
+
+}
+
 func TestMessage(t *testing.T) {
 	message := GetMessage("pxmboard.php?mode=message&brdid=1&msgid=4377586")
 	t.Log("Message: ", message.Content)

@@ -4,10 +4,13 @@ import (
 	"log"
 
 	"github.com/snipem/maniacforum/board"
+	"strings"
 
 	ui "github.com/gizak/termui"
 	"github.com/gizak/termui/widgets"
 )
+
+var innerThreads board.Thread
 
 func main() {
 
@@ -25,13 +28,14 @@ func main() {
 	beitraege := widgets.NewList()
 	beitraege.Title = "Beiträge"
 
-	threads := board.GetThreads()
+	threads := board.GetThreads("pxmboard.php?mode=threadlist&brdid=1&sortorder=last")
 
 	for _, thread := range threads {
 		l.Rows = append(l.Rows, thread.Title)
 	}
 
 	l.TextStyle = ui.NewStyle(ui.ColorYellow)
+	beitraege.TextStyle = ui.NewStyle(ui.ColorYellow)
 	l.WrapText = false
 	// l.SetRect(0, 0, 30, 50)
 	// t.SetRect(30, 20, 100, 40)
@@ -61,17 +65,29 @@ func main() {
 		switch e.ID {
 		case "q", "<C-c>":
 			return
-		case "j", "<Down>":
+		case "<Down>":
 			l.ScrollDown()
-		case "k", "<Up>":
+		case "<Up>":
 			l.ScrollUp()
+		case "j":
+			beitraege.ScrollDown()
+			message := board.GetMessage(innerThreads.Messages[beitraege.SelectedRow].Link)
+			t.Text = message.Content
+		case "k":
+			beitraege.ScrollUp()
 		case "<Enter>":
 			// log.Fatalf(threads[l.SelectedRow].Link)
 			message := board.GetMessage(threads[l.SelectedRow].Link)
 			// t.Text = threads[l.SelectedRow].Link
+			innerThreads = board.GetThread(threads[l.SelectedRow].Id)
+			beitraege.Rows = nil
+			for _, message := range innerThreads.Messages {
+				beitraege.Rows = append(beitraege.Rows, strings.Repeat("    ", message.Hiearachy-1)+ "○ " + message.Topic)
+			}
 			t.Text = message.Content
 			// t.Text = "test"
 			ui.Render(t)
+			ui.Render(beitraege)
 		case "<C-d>":
 			l.HalfPageDown()
 		case "<C-u>":
@@ -98,6 +114,7 @@ func main() {
 
 		ui.Render(l)
 		ui.Render(t)
+		ui.Render(beitraege)
 
 	}
 }

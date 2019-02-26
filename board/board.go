@@ -3,11 +3,13 @@ package board
 import (
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/PuerkitoBio/goquery"
 )
 
 type Thread struct {
+	Id string
 	Title          string
 	Link           string
 	Author         string
@@ -15,6 +17,7 @@ type Thread struct {
 	Answers        int
 	LastAnswerDate string
 	LastAnswerLink string
+	Messages []Message
 }
 
 type Message struct {
@@ -22,6 +25,7 @@ type Message struct {
 	Link    string
 	Topic   string
 	Date    string
+	Hiearachy int
 	Author  User
 }
 
@@ -30,7 +34,29 @@ type User struct {
 	Id   int
 }
 
+func GetThread(id string) Thread {
+	resource := "pxmboard.php?mode=thread&brdid=1&thrdid="+id
+	var t Thread
+	doc := getDoc(resource)	
+
+	doc.Find("li").Each(func(i int, s *goquery.Selection) {
+		var m Message
+		m.Topic = s.Find("a > font").Text()
+		m.Hiearachy = s.ParentsFiltered("ul").Length()
+		m.Link, _ = s.Find("a").Attr("href")
+
+		t.Messages = append(t.Messages, m)
+	})
+
+	return t
+}
+
 func GetMessage(resource string) Message {
+
+	if resource == "" {
+		log.Fatalf("Resource id is empty")
+	}
+
 	var m Message
 	doc := getDoc(resource)
 
@@ -66,11 +92,11 @@ func getDoc(resource string) *goquery.Document {
 
 }
 
-func GetThreads() []Thread {
+func GetThreads(resource string) []Thread {
 
 	var threads []Thread
 
-	doc := getDoc("pxmboard.php?mode=threadlist&brdid=1&sortorder=last")
+	doc := getDoc(resource)
 
 	// Find the review items
 	doc.Find("#threadlist > a").Each(func(i int, s *goquery.Selection) {
@@ -78,7 +104,12 @@ func GetThreads() []Thread {
 		var t Thread
 		t.Title = s.Find("font").Text()
 		t.Link, _ = s.Attr("href")
-		// fmt.Printf("Thread %d: %s - %s\n", i, t.title, t.link)
+
+		id, _ := s.Attr("onclick")
+
+		id = strings.Replace(id, "ld(", "", 1)
+		t.Id = strings.Replace(id, ",0)", "", 1)
+		// t.BoardId = "TODO"
 
 		threads = append(threads, t)
 	})
