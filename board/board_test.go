@@ -2,6 +2,7 @@ package board
 
 import (
 	"testing"
+	"strings"
 )
 
 func TestMessage(t *testing.T) {
@@ -9,7 +10,7 @@ func TestMessage(t *testing.T) {
 	t.Log("Message: ", message.Content)
 	t.Log("Link: ", message.Link)
 	expected := "Trophy-Sharing bedeutet nicht zwingend Cross-Buy"
-	if message.Content != expected {
+	if !strings.Contains(message.Content, expected) {
 		t.Errorf("Message does not match, was '%s', expected '%s'", message.Content, expected)
 	}
 	expectedAuthor := "snimat"

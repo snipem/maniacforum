@@ -33,11 +33,13 @@ type User struct {
 func GetMessage(resource string) Message {
 	var m Message
 	doc := getDoc(resource)
-	doc.Find("#norm").Each(func(i int, s *goquery.Selection) {
-		// For each item found, get the band and title
+
+	doc.Find(".bg2").Each(func(i int, s *goquery.Selection) {
 		m.Content = s.Find("font").Text()
-		m.Link = resource
-		// fmt.Printf("Thread %d: %s - %s\n", i, t.title, t.link)
+	})
+
+	doc.Find("table").Each(func(i int, s *goquery.Selection) {
+		m.Content = s.Find("font").Text()
 	})
 	return m
 }
