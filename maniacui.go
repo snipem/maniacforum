@@ -1,7 +1,3 @@
-// Copyright 2017 Zack Guo <zack.y.guo@gmail.com>. All rights reserved.
-// Use of this source code is governed by a MIT license that can
-// be found in the LICENSE file.
-
 package main
 
 import (
@@ -14,6 +10,7 @@ import (
 )
 
 func main() {
+
 	if err := ui.Init(); err != nil {
 		log.Fatalf("failed to initialize termui: %v", err)
 	}
@@ -23,7 +20,10 @@ func main() {
 	t.Title = "Message"
 
 	l := widgets.NewList()
-	l.Title = "Threads"
+	l.Title = "Themen"
+	
+	beitraege := widgets.NewList()
+	beitraege.Title = "Beiträge"
 
 	threads := board.GetThreads()
 
@@ -33,11 +33,26 @@ func main() {
 
 	l.TextStyle = ui.NewStyle(ui.ColorYellow)
 	l.WrapText = false
-	l.SetRect(0, 0, 60, 40)
-	t.SetRect(70, 20, 180, 40)
+	// l.SetRect(0, 0, 30, 50)
+	// t.SetRect(30, 20, 100, 40)
 
-	ui.Render(l)
-	ui.Render(t)
+	grid := ui.NewGrid()
+
+	grid.Set(
+		ui.NewCol(1.0/2,
+			ui.NewRow(1.0/2, l),
+			ui.NewRow(1.0/2, beitraege),
+		),
+		ui.NewCol(1.0/2, t),
+	)
+
+	termWidth, termHeight := ui.TerminalDimensions()
+	grid.SetRect(0, 0, termWidth, termHeight)
+
+	// ui.Render(l)
+	// ui.Render(t)
+
+	ui.Render(grid)
 
 	previousKey := ""
 	uiEvents := ui.PollEvents()
