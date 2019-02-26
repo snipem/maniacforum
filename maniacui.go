@@ -81,6 +81,7 @@ func main() {
 			// t.Text = threads[l.SelectedRow].Link
 			innerThreads = board.GetThread(threads[l.SelectedRow].Id)
 			beitraege.Rows = nil
+			beitraege.SelectedRow = 0
 			for _, message := range innerThreads.Messages {
 				beitraege.Rows = append(beitraege.Rows, strings.Repeat("    ", message.Hiearachy-1)+ "○ " + message.Topic)
 			}
