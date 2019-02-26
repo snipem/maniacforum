@@ -19,6 +19,15 @@ type Thread struct {
 
 type Message struct {
 	Content string
+	Link    string
+	Topic   string
+	Date    string
+	Author  User
+}
+
+type User struct {
+	Name string
+	Id   int
 }
 
 func GetMessage(resource string) Message {
@@ -27,7 +36,7 @@ func GetMessage(resource string) Message {
 	doc.Find("#norm").Each(func(i int, s *goquery.Selection) {
 		// For each item found, get the band and title
 		m.Content = s.Find("font").Text()
-		// t.Link, _ = s.Attr("href")
+		m.Link = resource
 		// fmt.Printf("Thread %d: %s - %s\n", i, t.title, t.link)
 	})
 	return m
