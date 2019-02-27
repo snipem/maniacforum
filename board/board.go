@@ -62,8 +62,8 @@ func GetMessage(resource string) Message {
 	var m Message
 	doc := getDoc(resource)
 
-	doc.Find(".bg2").Each(func(i int, s *goquery.Selection) {
-		m.Content = s.Find("font").Text()
+	doc.Find(".bg2 > td > font").Each(func(i int, s *goquery.Selection) {
+		m.Content = s.Text()
 	})
 
 	doc.Find("table").Each(func(i int, s *goquery.Selection) {
