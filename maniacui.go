@@ -3,8 +3,10 @@ package main
 import (
 	"log"
 
-	"github.com/snipem/maniacforum/board"
 	"strings"
+
+	"github.com/snipem/maniacforum/board"
+	"github.com/snipem/maniacforum/util"
 
 	ui "github.com/gizak/termui"
 	"github.com/gizak/termui/widgets"
@@ -24,7 +26,7 @@ func main() {
 
 	l := widgets.NewList()
 	l.Title = "Themen"
-	
+
 	beitraege := widgets.NewList()
 	beitraege.Title = "Beiträge"
 
@@ -72,11 +74,11 @@ func main() {
 		case "j":
 			beitraege.ScrollDown()
 			message := board.GetMessage(innerThreads.Messages[beitraege.SelectedRow].Link)
-			t.Text = strings.Replace(message.Content, ">", "[>](fg:red)", -1)
+			t.Text = util.FormatQuote(message.Content)
 		case "k":
 			beitraege.ScrollUp()
 			message := board.GetMessage(innerThreads.Messages[beitraege.SelectedRow].Link)
-			t.Text = strings.Replace(message.Content, ">", "[>](fg:red)", -1)
+			t.Text = util.FormatQuote(message.Content)
 		case "<Enter>":
 			// log.Fatalf(threads[l.SelectedRow].Link)
 			message := board.GetMessage(threads[l.SelectedRow].Link)
@@ -85,7 +87,7 @@ func main() {
 			beitraege.Rows = nil
 			beitraege.SelectedRow = 0
 			for _, message := range innerThreads.Messages {
-				beitraege.Rows = append(beitraege.Rows, strings.Repeat("    ", message.Hiearachy-1)+ "○ " + message.Topic + " " + message.Date + " " +  message.Author.Name)
+				beitraege.Rows = append(beitraege.Rows, strings.Repeat("    ", message.Hiearachy-1)+"○ "+message.Topic+" "+message.Date+" "+message.Author.Name)
 			}
 			t.Text = message.Content
 			// t.Text = "test"

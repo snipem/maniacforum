@@ -1,8 +1,8 @@
 package board
 
 import (
-	"testing"
 	"strings"
+	"testing"
 )
 
 func TestThread(t *testing.T) {
@@ -11,7 +11,6 @@ func TestThread(t *testing.T) {
 		t.Errorf("No messages returned")
 	}
 	t.Log(thread.Messages)
-
 }
 
 func TestMessage(t *testing.T) {
