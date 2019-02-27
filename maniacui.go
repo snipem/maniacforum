@@ -13,6 +13,32 @@ import (
 )
 
 var innerThreads board.Thread
+var beitraege *widgets.List
+var t *widgets.Paragraph
+var l *widgets.List
+var threads []board.Thread
+
+func loadBeitrag()  {
+	if len(innerThreads.Messages) > 0 {
+		message := board.GetMessage(innerThreads.Messages[beitraege.SelectedRow].Link)
+		t.Text = util.FormatQuote(message.Content)
+	}
+}
+
+func loadThread()  {
+			// log.Fatalf(threads[l.SelectedRow].Link)
+			message := board.GetMessage(threads[l.SelectedRow].Link)
+			// t.Text = threads[l.SelectedRow].Link
+			innerThreads = board.GetThread(threads[l.SelectedRow].Id)
+			beitraege.Rows = nil
+			beitraege.SelectedRow = 0
+			for _, message := range innerThreads.Messages {
+				beitraege.Rows = append(beitraege.Rows, strings.Repeat("    ", message.Hiearachy-1)+"○ "+message.Topic+" "+message.Date+" "+message.Author.Name)
+			}
+			t.Text = message.Content
+			// t.Text = "test"
+	
+}
 
 func main() {
 
@@ -21,16 +47,15 @@ func main() {
 	}
 	defer ui.Close()
 
-	t := widgets.NewParagraph()
-	t.Title = "Message"
+	t = widgets.NewParagraph()
 
-	l := widgets.NewList()
-	l.Title = "Themen"
+	l = widgets.NewList()
+	// TODO get from page
+	l.Title = "Smalltalk"
 
-	beitraege := widgets.NewList()
-	beitraege.Title = "Beiträge"
+	beitraege = widgets.NewList()
 
-	threads := board.GetThreads("pxmboard.php?mode=threadlist&brdid=1&sortorder=last")
+	threads = board.GetThreads("pxmboard.php?mode=threadlist&brdid=1&sortorder=last")
 
 	for _, thread := range threads {
 		l.Rows = append(l.Rows, thread.Title)
@@ -67,32 +92,20 @@ func main() {
 		switch e.ID {
 		case "q", "<C-c>":
 			return
-		case "<Down>":
+		case "J","<Down>":
 			l.ScrollDown()
-		case "<Up>":
+			loadThread()
+		case "K","<Up>":
 			l.ScrollUp()
+			loadThread()
 		case "j":
 			beitraege.ScrollDown()
-			message := board.GetMessage(innerThreads.Messages[beitraege.SelectedRow].Link)
-			t.Text = util.FormatQuote(message.Content)
+			loadBeitrag()
 		case "k":
 			beitraege.ScrollUp()
-			message := board.GetMessage(innerThreads.Messages[beitraege.SelectedRow].Link)
-			t.Text = util.FormatQuote(message.Content)
+			loadBeitrag()
 		case "<Enter>":
-			// log.Fatalf(threads[l.SelectedRow].Link)
-			message := board.GetMessage(threads[l.SelectedRow].Link)
-			// t.Text = threads[l.SelectedRow].Link
-			innerThreads = board.GetThread(threads[l.SelectedRow].Id)
-			beitraege.Rows = nil
-			beitraege.SelectedRow = 0
-			for _, message := range innerThreads.Messages {
-				beitraege.Rows = append(beitraege.Rows, strings.Repeat("    ", message.Hiearachy-1)+"○ "+message.Topic+" "+message.Date+" "+message.Author.Name)
-			}
-			t.Text = message.Content
-			// t.Text = "test"
-			ui.Render(t)
-			ui.Render(beitraege)
+			loadThread()
 		case "<C-d>":
 			l.HalfPageDown()
 		case "<C-u>":
