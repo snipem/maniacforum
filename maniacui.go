@@ -67,12 +67,18 @@ func main() {
 	// l.SetRect(0, 0, 30, 50)
 	// t.SetRect(30, 20, 100, 40)
 
+	tabpane := widgets.NewTabPane(["S", "OT"])
+	tabpane.SetRect(0, 1, 50, 4)
+	tabpane.Border = false
+
+
 	grid := ui.NewGrid()
 
 	grid.Set(
 		ui.NewCol(1.0/2,
-			ui.NewRow(1.0/2, l),
-			ui.NewRow(1.0/2, beitraege),
+			ui.NewRow(0.1, tabpane),
+			ui.NewRow(0.4, l),
+			ui.NewRow(0.5, beitraege),
 		),
 		ui.NewCol(1.0/2, t),
 	)
@@ -83,7 +89,14 @@ func main() {
 	// ui.Render(l)
 	// ui.Render(t)
 
-	ui.Render(grid)
+	renderTab := func() {
+		switch tabpane.ActiveTabIndex {
+		case 0:
+			ui.Render(grid)
+		case 1:
+			ui.Render(grid)
+		}
+	}
 
 	previousKey := ""
 	uiEvents := ui.PollEvents()
@@ -92,6 +105,14 @@ func main() {
 		switch e.ID {
 		case "q", "<C-c>":
 			return
+		case "b":
+			tabpane.FocusLeft()
+			ui.Clear()
+			renderTab()
+		case "n":
+			tabpane.FocusRight()
+			ui.Clear()
+			renderTab()
 		case "J","<Down>":
 			l.ScrollDown()
 			loadThread()
@@ -133,6 +154,10 @@ func main() {
 		ui.Render(l)
 		ui.Render(t)
 		ui.Render(beitraege)
+
+		ui.Render(tabpane)
+
+		renderTab()
 
 	}
 }
