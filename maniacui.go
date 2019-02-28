@@ -126,8 +126,6 @@ func main() {
 			previousKey = e.ID
 		}
 
-		ui.Render(boardPanel)
-		ui.Render(messagePanel)
-		ui.Render(threadPanel)
+		ui.Render(boardPanel, messagePanel, threadPanel)
 	}
 }
