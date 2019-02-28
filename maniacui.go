@@ -13,32 +13,32 @@ import (
 )
 
 var innerThreads board.Thread
-var beitraege *widgets.List
-var t *widgets.Paragraph
-var l *widgets.List
+var threadPanel *widgets.List
+var messagePanel *widgets.Paragraph
+var boardPanel *widgets.List
 var threads []board.Thread
 
 func loadBeitrag() {
 	if len(innerThreads.Messages) > 0 {
-		message := board.GetMessage(innerThreads.Messages[beitraege.SelectedRow].Link)
-		t.Text = util.FormatQuote(message.Content)
+		message := board.GetMessage(innerThreads.Messages[threadPanel.SelectedRow].Link)
+		messagePanel.Text = util.FormatQuote(message.Content)
 	}
 }
 
 func loadThread() {
-	message := board.GetMessage(threads[l.SelectedRow].Link)
-	innerThreads = board.GetThread(threads[l.SelectedRow].ID)
+	message := board.GetMessage(threads[boardPanel.SelectedRow].Link)
+	innerThreads = board.GetThread(threads[boardPanel.SelectedRow].ID)
 
-	beitraege.Rows = nil
-	beitraege.SelectedRow = 0
+	threadPanel.Rows = nil
+	threadPanel.SelectedRow = 0
 
 	for _, message := range innerThreads.Messages {
-		beitraege.Rows = append(
-			beitraege.Rows,
+		threadPanel.Rows = append(
+			threadPanel.Rows,
 			strings.Repeat("    ", message.Hiearachy-1)+
 				"○ "+message.Topic+" "+message.Date+" "+message.Author.Name)
 	}
-	t.Text = message.Content
+	messagePanel.Text = message.Content
 }
 
 func main() {
@@ -48,32 +48,32 @@ func main() {
 	}
 	defer ui.Close()
 
-	t = widgets.NewParagraph()
+	messagePanel = widgets.NewParagraph()
 
-	l = widgets.NewList()
+	boardPanel = widgets.NewList()
 	// TODO get from page
-	l.Title = "Smalltalk"
+	boardPanel.Title = "Smalltalk"
 
-	beitraege = widgets.NewList()
+	threadPanel = widgets.NewList()
 
 	threads = board.GetThreads("pxmboard.php?mode=threadlist&brdid=1&sortorder=last")
 
 	for _, thread := range threads {
-		l.Rows = append(l.Rows, thread.Title)
+		boardPanel.Rows = append(boardPanel.Rows, thread.Title)
 	}
 
-	l.TextStyle = ui.NewStyle(ui.ColorRed)
-	beitraege.TextStyle = ui.NewStyle(ui.ColorRed)
-	l.WrapText = false
+	boardPanel.TextStyle = ui.NewStyle(ui.ColorRed)
+	threadPanel.TextStyle = ui.NewStyle(ui.ColorRed)
+	boardPanel.WrapText = false
 
 	grid := ui.NewGrid()
 
 	grid.Set(
 		ui.NewCol(1.0/2,
-			ui.NewRow(1.0/2, l),
-			ui.NewRow(1.0/2, beitraege),
+			ui.NewRow(1.0/2, boardPanel),
+			ui.NewRow(1.0/2, threadPanel),
 		),
-		ui.NewCol(1.0/2, t),
+		ui.NewCol(1.0/2, messagePanel),
 	)
 
 	termWidth, termHeight := ui.TerminalDimensions()
@@ -89,35 +89,35 @@ func main() {
 		case "q", "<C-c>":
 			return
 		case "J", "<Down>":
-			l.ScrollDown()
+			boardPanel.ScrollDown()
 			loadThread()
 		case "K", "<Up>":
-			l.ScrollUp()
+			boardPanel.ScrollUp()
 			loadThread()
 		case "j":
-			beitraege.ScrollDown()
+			threadPanel.ScrollDown()
 			loadBeitrag()
 		case "k":
-			beitraege.ScrollUp()
+			threadPanel.ScrollUp()
 			loadBeitrag()
 		case "<Enter>":
 			loadThread()
 		case "<C-d>":
-			l.HalfPageDown()
+			boardPanel.HalfPageDown()
 		case "<C-u>":
-			l.HalfPageUp()
+			boardPanel.HalfPageUp()
 		case "<C-f>":
-			l.PageDown()
+			boardPanel.PageDown()
 		case "<C-b>":
-			l.PageUp()
+			boardPanel.PageUp()
 		case "g":
 			if previousKey == "g" {
-				l.ScrollTop()
+				boardPanel.ScrollTop()
 			}
 		case "<Home>":
-			l.ScrollTop()
+			boardPanel.ScrollTop()
 		case "G", "<End>":
-			l.ScrollBottom()
+			boardPanel.ScrollBottom()
 		}
 
 		if previousKey == "g" {
@@ -126,8 +126,8 @@ func main() {
 			previousKey = e.ID
 		}
 
-		ui.Render(l)
-		ui.Render(t)
-		ui.Render(beitraege)
+		ui.Render(boardPanel)
+		ui.Render(messagePanel)
+		ui.Render(threadPanel)
 	}
 }
