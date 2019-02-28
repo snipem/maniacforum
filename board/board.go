@@ -106,7 +106,6 @@ func getDoc(resource string) *goquery.Document {
 func GetBoard(resource string) Board {
 
 	var board Board
-	var threads []Thread
 
 	doc := getDoc(resource)
 
@@ -128,11 +127,11 @@ func GetBoard(resource string) Board {
 
 	doc.Find("#threadlist > font").Each(func(i int, s *goquery.Selection) {
 		// For each item found, get the band and title
-		var t = threads[i]
+		var t = board.Threads[i]
 		t.Author = s.Find("span").Text()
 		// fmt.Printf("Thread %d: %s - %s - %s\n", i, t.Title, t.Link, t.Author)
 
-		threads[i] = t
+		board.Threads[i] = t
 	})
 
 	return board
