@@ -156,6 +156,12 @@ func GetBoard(resource string) Board {
 		t.Author = s.Find("span").Text()
 		// fmt.Printf("Thread %d: %s - %s - %s\n", i, t.Title, t.Link, t.Author)
 
+		// Remove sub element from doc that is included in date
+		s.Find("b").Remove()
+		foundDate := s.Text()
+		foundDate = strings.Replace(foundDate, "\n", " ", -1)
+		t.Date = strings.Replace(foundDate, " am ", "", 1)
+
 		board.Threads[i] = t
 	})
 

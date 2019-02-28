@@ -41,12 +41,11 @@ func loadThread() {
 	// Clear thread panel
 	threadPanel.Rows = nil
 	threadPanel.SelectedRow = 0
-
 	for _, message := range innerThreads.Messages {
 		threadPanel.Rows = append(
 			threadPanel.Rows,
 			strings.Repeat("    ", message.Hierarchy-1)+
-				"○ "+message.Topic+" "+message.Date+" "+message.Author.Name)
+				"○ "+message.Topic+" ("+message.Date+") "+message.Author.Name)
 	}
 	messagePanel.Text = message.Content
 }
@@ -69,7 +68,7 @@ func main() {
 	boardPanel.Title = forum.Title
 
 	for _, thread := range threads {
-		boardPanel.Rows = append(boardPanel.Rows, thread.Title)
+		boardPanel.Rows = append(boardPanel.Rows, thread.Title+" "+thread.Date)
 	}
 
 	boardPanel.TextStyle = ui.NewStyle(ui.ColorRed)

@@ -6,6 +6,14 @@ import (
 	"testing"
 )
 
+func TestBoard(t *testing.T) {
+	forum := GetBoard("pxmboard.php?mode=threadlist&brdid=1&sortorder=last")
+	threads := forum.Threads
+	// TODO Flaky
+	assert.Equal(t, "02.12.17 10:32", threads[0].Date)
+
+}
+
 func TestThread(t *testing.T) {
 	thread := GetThread("173448")
 	if len(thread.Messages) == 0 {
