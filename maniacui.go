@@ -35,7 +35,7 @@ func loadThread() {
 	for _, message := range innerThreads.Messages {
 		threadPanel.Rows = append(
 			threadPanel.Rows,
-			strings.Repeat("    ", message.Hiearachy-1)+
+			strings.Repeat("    ", message.Hierarchy-1)+
 				"○ "+message.Topic+" "+message.Date+" "+message.Author.Name)
 	}
 	messagePanel.Text = message.Content

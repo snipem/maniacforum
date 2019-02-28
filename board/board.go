@@ -27,7 +27,7 @@ type Message struct {
 	Link      string
 	Topic     string
 	Date      string
-	Hiearachy int
+	Hierarchy int
 	Author    User
 }
 
@@ -46,7 +46,7 @@ func GetThread(id string) Thread {
 	doc.Find("li").Each(func(i int, s *goquery.Selection) {
 		var m Message
 		m.Topic = s.Find("a > font").Text()
-		m.Hiearachy = s.ParentsFiltered("ul").Length()
+		m.Hierarchy = s.ParentsFiltered("ul").Length()
 		m.Link, _ = s.Find("a").Attr("href")
 		m.Author.Name = strings.TrimSpace(s.Find("span").Find("span").Text())
 		// m.Date = s.Find("span > font").Text()
