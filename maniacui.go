@@ -18,26 +18,27 @@ var t *widgets.Paragraph
 var l *widgets.List
 var threads []board.Thread
 
-func loadBeitrag()  {
+func loadBeitrag() {
 	if len(innerThreads.Messages) > 0 {
 		message := board.GetMessage(innerThreads.Messages[beitraege.SelectedRow].Link)
 		t.Text = util.FormatQuote(message.Content)
 	}
 }
 
-func loadThread()  {
-			// log.Fatalf(threads[l.SelectedRow].Link)
-			message := board.GetMessage(threads[l.SelectedRow].Link)
-			// t.Text = threads[l.SelectedRow].Link
-			innerThreads = board.GetThread(threads[l.SelectedRow].Id)
-			beitraege.Rows = nil
-			beitraege.SelectedRow = 0
-			for _, message := range innerThreads.Messages {
-				beitraege.Rows = append(beitraege.Rows, strings.Repeat("    ", message.Hiearachy-1)+"○ "+message.Topic+" "+message.Date+" "+message.Author.Name)
-			}
-			t.Text = message.Content
-			// t.Text = "test"
-	
+func loadThread() {
+	message := board.GetMessage(threads[l.SelectedRow].Link)
+	innerThreads = board.GetThread(threads[l.SelectedRow].ID)
+
+	beitraege.Rows = nil
+	beitraege.SelectedRow = 0
+
+	for _, message := range innerThreads.Messages {
+		beitraege.Rows = append(
+			beitraege.Rows,
+			strings.Repeat("    ", message.Hiearachy-1)+
+				"○ "+message.Topic+" "+message.Date+" "+message.Author.Name)
+	}
+	t.Text = message.Content
 }
 
 func main() {
@@ -64,8 +65,6 @@ func main() {
 	l.TextStyle = ui.NewStyle(ui.ColorRed)
 	beitraege.TextStyle = ui.NewStyle(ui.ColorRed)
 	l.WrapText = false
-	// l.SetRect(0, 0, 30, 50)
-	// t.SetRect(30, 20, 100, 40)
 
 	grid := ui.NewGrid()
 
@@ -80,9 +79,6 @@ func main() {
 	termWidth, termHeight := ui.TerminalDimensions()
 	grid.SetRect(0, 0, termWidth, termHeight)
 
-	// ui.Render(l)
-	// ui.Render(t)
-
 	ui.Render(grid)
 
 	previousKey := ""
@@ -92,10 +88,10 @@ func main() {
 		switch e.ID {
 		case "q", "<C-c>":
 			return
-		case "J","<Down>":
+		case "J", "<Down>":
 			l.ScrollDown()
 			loadThread()
-		case "K","<Up>":
+		case "K", "<Up>":
 			l.ScrollUp()
 			loadThread()
 		case "j":
@@ -133,6 +129,5 @@ func main() {
 		ui.Render(l)
 		ui.Render(t)
 		ui.Render(beitraege)
-
 	}
 }
