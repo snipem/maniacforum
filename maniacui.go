@@ -56,7 +56,7 @@ func main() {
 
 	threadPanel = widgets.NewList()
 
-	threads = board.GetThreads("pxmboard.php?mode=threadlist&brdid=1&sortorder=last")
+	threads = board.GetBoard("pxmboard.php?mode=threadlist&brdid=1&sortorder=last").Threads
 
 	for _, thread := range threads {
 		boardPanel.Rows = append(boardPanel.Rows, thread.Title)

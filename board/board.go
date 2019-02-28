@@ -31,6 +31,10 @@ type Message struct {
 	Author    User
 }
 
+type Board struct {
+	Threads []Thread
+}
+
 // User contains User data
 type User struct {
 	Name string
@@ -99,8 +103,9 @@ func getDoc(resource string) *goquery.Document {
 
 }
 
-func GetThreads(resource string) []Thread {
+func GetBoard(resource string) Board {
 
+	var board Board
 	var threads []Thread
 
 	doc := getDoc(resource)
@@ -118,7 +123,7 @@ func GetThreads(resource string) []Thread {
 		t.ID = strings.Replace(id, ",0)", "", 1)
 		// t.BoardId = "TODO"
 
-		threads = append(threads, t)
+		board.Threads = append(board.Threads, t)
 	})
 
 	doc.Find("#threadlist > font").Each(func(i int, s *goquery.Selection) {
@@ -130,5 +135,5 @@ func GetThreads(resource string) []Thread {
 		threads[i] = t
 	})
 
-	return threads
+	return board
 }
