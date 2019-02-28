@@ -1,3 +1,4 @@
+//run: uname
 package main
 
 import (
@@ -18,6 +19,11 @@ var threadPanel *widgets.List
 var messagePanel *widgets.Paragraph
 var boardPanel *widgets.List
 var threads []board.Thread
+
+func loadBoard() {
+	forum := board.GetBoard("pxmboard.php?mode=threadlist&brdid=1&sortorder=last")
+	threads = forum.Threads
+}
 
 func loadMessage() {
 	if len(innerThreads.Messages) > 0 {
@@ -55,8 +61,7 @@ func main() {
 
 	threadPanel = widgets.NewList()
 
-	forum := board.GetBoard("pxmboard.php?mode=threadlist&brdid=1&sortorder=last")
-	threads = forum.Threads
+	loadBoard()
 
 	boardPanel.Title = forum.Title
 
