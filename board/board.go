@@ -55,10 +55,15 @@ func GetThread(id string) Thread {
 	doc.Find("li").Each(func(i int, s *goquery.Selection) {
 		var m Message
 		m.Topic = s.Find("a > font").Text()
+
 		m.Hierarchy = s.ParentsFiltered("ul").Length()
 		m.Link, _ = s.Find("a").Attr("href")
 		m.Author.Name = strings.TrimSpace(s.Find("span").Find("span").Text())
-		// m.Date = s.Find("span > font").Text()
+
+		// Remove sub element from doc that is included in date
+		s.Find("li > span > font > b").Remove()
+		foundDate := s.Find("li > span > font").Text()
+		m.Date = strings.Replace(foundDate, " - ", "", 1)
 
 		t.Messages = append(t.Messages, m)
 	})

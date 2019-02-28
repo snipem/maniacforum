@@ -1,6 +1,7 @@
 package board
 
 import (
+	"github.com/stretchr/testify/assert"
 	"strings"
 	"testing"
 )
@@ -11,6 +12,7 @@ func TestThread(t *testing.T) {
 		t.Errorf("No messages returned")
 	}
 	t.Log(thread.Messages)
+	assert.Equal(t, "21.02.19 23:16", thread.Messages[0].Date)
 }
 
 func TestMessage(t *testing.T) {
