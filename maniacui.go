@@ -18,7 +18,7 @@ var messagePanel *widgets.Paragraph
 var boardPanel *widgets.List
 var threads []board.Thread
 
-func loadBeitrag() {
+func loadMessage() {
 	if len(innerThreads.Messages) > 0 {
 		message := board.GetMessage(innerThreads.Messages[threadPanel.SelectedRow].Link)
 		messagePanel.Text = util.FormatQuote(message.Content)
@@ -96,10 +96,10 @@ func main() {
 			loadThread()
 		case "j":
 			threadPanel.ScrollDown()
-			loadBeitrag()
+			loadMessage()
 		case "k":
 			threadPanel.ScrollUp()
-			loadBeitrag()
+			loadMessage()
 		case "<Enter>":
 			loadThread()
 		case "<C-d>":
