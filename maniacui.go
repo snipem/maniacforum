@@ -13,6 +13,7 @@ import (
 )
 
 var innerThreads board.Thread
+var forum board.Board
 var threadPanel *widgets.List
 var messagePanel *widgets.Paragraph
 var boardPanel *widgets.List
@@ -51,12 +52,13 @@ func main() {
 	messagePanel = widgets.NewParagraph()
 
 	boardPanel = widgets.NewList()
-	// TODO get from page
-	boardPanel.Title = "Smalltalk"
 
 	threadPanel = widgets.NewList()
 
-	threads = board.GetBoard("pxmboard.php?mode=threadlist&brdid=1&sortorder=last").Threads
+	forum := board.GetBoard("pxmboard.php?mode=threadlist&brdid=1&sortorder=last")
+	threads = forum.Threads
+
+	boardPanel.Title = forum.Title
 
 	for _, thread := range threads {
 		boardPanel.Rows = append(boardPanel.Rows, thread.Title)

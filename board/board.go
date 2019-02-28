@@ -33,6 +33,7 @@ type Message struct {
 
 type Board struct {
 	Threads []Thread
+	Title   string
 }
 
 // User contains User data
@@ -108,6 +109,9 @@ func GetBoard(resource string) Board {
 	var board Board
 
 	doc := getDoc(resource)
+
+	// TODO Get from actual board
+	board.Title = "Smalltalk"
 
 	// Find the review items
 	doc.Find("#threadlist > a").Each(func(i int, s *goquery.Selection) {
