@@ -1,4 +1,5 @@
-//run: uname
+//run: tmux send-keys -t right "C-c"; sleep 0.1; tmux send-keys -t right "go run maniacui.go" "C-m"
+
 package main
 
 import (
@@ -32,10 +33,12 @@ func loadMessage() {
 	}
 }
 
+// loadThread loads selected thread from board and displays the first message
 func loadThread() {
 	message := board.GetMessage(threads[boardPanel.SelectedRow].Link)
 	innerThreads = board.GetThread(threads[boardPanel.SelectedRow].ID)
 
+	// Clear thread panel
 	threadPanel.Rows = nil
 	threadPanel.SelectedRow = 0
 

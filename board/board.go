@@ -3,6 +3,8 @@ package board
 import (
 	"log"
 	"net/http"
+	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
@@ -31,7 +33,9 @@ type Message struct {
 	Author    User
 }
 
+// Board in forum, like Smalltalk, O/T, etc.
 type Board struct {
+	ID      string
 	Threads []Thread
 	Title   string
 }
@@ -70,15 +74,27 @@ func GetMessage(resource string) Message {
 	}
 
 	var m Message
+	m.Link = resource
+
 	doc := getDoc(resource)
 
 	doc.Find(".bg2 > td > font").Each(func(i int, s *goquery.Selection) {
 		m.Content = s.Text()
 	})
 
-	doc.Find("tbody > tr.bg1 > td#norm > a").Each(func(i int, s *goquery.Selection) {
-		m.Author.Name = s.Text()
+	doc.Find("table > tbody > tr > td > table > tbody > tr > td > b").Each(func(i int, s *goquery.Selection) {
+		m.Topic = s.Text()
 	})
+
+	doc.Find("table > tbody > tr:nth-child(2) > td#norm > a").Each(func(i int, s *goquery.Selection) {
+		// Extract user id from link in username
+		m.Author.Name = s.Text()
+		href, _ := s.Attr("href")
+		var re = regexp.MustCompile(".*usrid=")
+		out := re.ReplaceAllString(href, "")
+		m.Author.ID, _ = strconv.Atoi(out)
+	})
+
 	return m
 }
 
