@@ -31,8 +31,8 @@ func TestMessage(t *testing.T) {
 		t.Errorf("Topic does not match, was '%s', expected '%s'", message.Topic, expectedTopic)
 	}
 
-	expectedAuthorId := 54889
-	if expectedAuthorId != message.Author.Id {
-		t.Errorf("Author Id does not match, was '%d', expected '%d'", message.Author.Id, expectedAuthorId)
+	expectedAuthorID := 54889
+	if expectedAuthorID != message.Author.ID {
+		t.Errorf("Author Id does not match, was '%d', expected '%d'", message.Author.ID, expectedAuthorID)
 	}
 }

@@ -8,8 +8,9 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
+// Thread contains information about a Maniac Forum Thread
 type Thread struct {
-	Id string
+	ID             string
 	Title          string
 	Link           string
 	Author         string
@@ -17,27 +18,30 @@ type Thread struct {
 	Answers        int
 	LastAnswerDate string
 	LastAnswerLink string
-	Messages []Message
+	Messages       []Message
 }
 
+// Message contains information about a Maniac Forum Message. Single response to a Thread.
 type Message struct {
-	Content string
-	Link    string
-	Topic   string
-	Date    string
+	Content   string
+	Link      string
+	Topic     string
+	Date      string
 	Hiearachy int
-	Author  User
+	Author    User
 }
 
+// User contains User data
 type User struct {
 	Name string
-	Id   int
+	ID   int
 }
 
+// GetThread fatches a Thread based on a Thread id
 func GetThread(id string) Thread {
-	resource := "pxmboard.php?mode=thread&brdid=1&thrdid="+id
+	resource := "pxmboard.php?mode=thread&brdid=1&thrdid=" + id
 	var t Thread
-	doc := getDoc(resource)	
+	doc := getDoc(resource)
 
 	doc.Find("li").Each(func(i int, s *goquery.Selection) {
 		var m Message
@@ -53,6 +57,7 @@ func GetThread(id string) Thread {
 	return t
 }
 
+// GetMessage fetches a message based on it's resource string
 func GetMessage(resource string) Message {
 
 	if resource == "" {
@@ -66,17 +71,17 @@ func GetMessage(resource string) Message {
 		m.Content = s.Text()
 	})
 
-	doc.Find("table").Each(func(i int, s *goquery.Selection) {
-		// m.Topic = s.Find("font").Text()
+	doc.Find("tbody > tr.bg1 > td#norm > a").Each(func(i int, s *goquery.Selection) {
+		m.Author.Name = s.Text()
 	})
 	return m
 }
 
-var boardUrl = "https://www.maniac-forum.de/forum/"
+var boardURL = "https://www.maniac-forum.de/forum/"
 
 func getDoc(resource string) *goquery.Document {
 	// Request the HTML page.
-	res, err := http.Get(boardUrl + resource)
+	res, err := http.Get(boardURL + resource)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -110,7 +115,7 @@ func GetThreads(resource string) []Thread {
 		id, _ := s.Attr("onclick")
 
 		id = strings.Replace(id, "ld(", "", 1)
-		t.Id = strings.Replace(id, ",0)", "", 1)
+		t.ID = strings.Replace(id, ",0)", "", 1)
 		// t.BoardId = "TODO"
 
 		threads = append(threads, t)
