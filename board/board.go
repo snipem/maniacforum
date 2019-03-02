@@ -25,12 +25,14 @@ type Thread struct {
 
 // Message contains information about a Maniac Forum Message. Single response to a Thread.
 type Message struct {
-	Content   string
-	Link      string
-	Topic     string
-	Date      string
-	Hierarchy int
-	Author    User
+	Content         string
+	Link            string
+	Topic           string
+	Date            string
+	EnrichedContent string
+	Links           []string
+	Hierarchy       int
+	Author          User
 }
 
 // Board in forum, like Smalltalk, O/T, etc.

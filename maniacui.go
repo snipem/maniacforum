@@ -3,9 +3,11 @@ package main
 
 import (
 	"log"
+	"strconv"
 
 	"strings"
 
+	"github.com/skratchdot/open-golang/open"
 	"github.com/snipem/maniacforum/board"
 	"github.com/snipem/maniacforum/util"
 
@@ -19,6 +21,7 @@ var threadPanel *widgets.List
 var messagePanel *widgets.Paragraph
 var boardPanel *widgets.List
 var threads []board.Thread
+var message board.Message
 
 func loadBoard() {
 	forum := board.GetBoard("pxmboard.php?mode=threadlist&brdid=1&sortorder=last")
@@ -27,8 +30,9 @@ func loadBoard() {
 
 func loadMessage() {
 	if len(innerThreads.Messages) > 0 {
-		message := board.GetMessage(innerThreads.Messages[threadPanel.SelectedRow].Link)
-		messagePanel.Text = util.FormatQuote(message.Content)
+		message = board.GetMessage(innerThreads.Messages[threadPanel.SelectedRow].Link)
+		message.EnrichedContent, message.Links = util.EnrichLinks(message.Content)
+		messagePanel.Text = util.FormatQuote(message.EnrichedContent)
 	}
 }
 
@@ -47,6 +51,13 @@ func loadThread() {
 				"○ "+message.Topic+" ["+message.Date+" "+message.Author.Name+"](fg:white)")
 	}
 	messagePanel.Text = message.Content
+}
+
+func openLink(nr int) {
+	link := message.Links[nr-1]
+	cleanedLink := strings.Replace(link, "[", "", 1)
+	cleanedLink = strings.Replace(cleanedLink, "]", "", 1)
+	open.Run(cleanedLink)
 }
 
 func main() {
@@ -92,6 +103,9 @@ func main() {
 	for {
 		e := <-uiEvents
 		switch e.ID {
+		case "1", "2", "3", "4", "5", "6", "7", "8", "9", "0":
+			linkNr, _ := strconv.Atoi(e.ID)
+			openLink(linkNr)
 		case "q", "<C-c>":
 			return
 		case "J", "<Down>":
