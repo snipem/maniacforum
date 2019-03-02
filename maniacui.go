@@ -1,5 +1,4 @@
 //run: tmux send-keys -t right "C-c"; sleep 0.1; tmux send-keys -t right "go run maniacui.go" "C-m"
-
 package main
 
 import (
@@ -45,7 +44,7 @@ func loadThread() {
 		threadPanel.Rows = append(
 			threadPanel.Rows,
 			strings.Repeat("    ", message.Hierarchy-1)+
-				"○ "+message.Topic+" ("+message.Date+") "+message.Author.Name)
+				"○ "+message.Topic+" ["+message.Date+" "+message.Author.Name+"](fg:white)")
 	}
 	messagePanel.Text = message.Content
 }
@@ -58,9 +57,7 @@ func main() {
 	defer ui.Close()
 
 	messagePanel = widgets.NewParagraph()
-
 	boardPanel = widgets.NewList()
-
 	threadPanel = widgets.NewList()
 
 	loadBoard()
@@ -68,7 +65,7 @@ func main() {
 	boardPanel.Title = forum.Title
 
 	for _, thread := range threads {
-		boardPanel.Rows = append(boardPanel.Rows, thread.Title+" "+thread.Date)
+		boardPanel.Rows = append(boardPanel.Rows, thread.Title+" ["+thread.Date+"](fg:white)")
 	}
 
 	boardPanel.TextStyle = ui.NewStyle(ui.ColorRed)
