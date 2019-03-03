@@ -45,4 +45,6 @@ func TestMessage(t *testing.T) {
 	if expectedAuthorID != message.Author.ID {
 		t.Errorf("Author Id does not match, was '%d', expected '%d'", message.Author.ID, expectedAuthorID)
 	}
+
+	assert.Equal(t, "4377586", message.ID)
 }

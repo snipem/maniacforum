@@ -36,6 +36,10 @@ func loadMessage() {
 	}
 }
 
+func answer() {
+	open.Run(board.BoardURL + "pxmboard.php?mode=messageform&brdid=" + forum.ID + "&msgid=" + message.ID)
+}
+
 // loadThread loads selected thread from board and displays the first message
 func loadThread() {
 	message := board.GetMessage(threads[boardPanel.SelectedRow].Link)
@@ -106,6 +110,8 @@ func main() {
 		case "1", "2", "3", "4", "5", "6", "7", "8", "9", "0":
 			linkNr, _ := strconv.Atoi(e.ID)
 			openLink(linkNr)
+		case "a":
+			answer()
 		case "q", "<C-c>":
 			return
 		case "J", "<Down>":
@@ -123,13 +129,13 @@ func main() {
 		case "<Enter>":
 			loadThread()
 		case "<C-d>":
-			boardPanel.HalfPageDown()
+			boardPanel.ScrollHalfPageDown()
 		case "<C-u>":
-			boardPanel.HalfPageUp()
+			boardPanel.ScrollHalfPageUp()
 		case "<C-f>":
-			boardPanel.PageDown()
+			boardPanel.ScrollPageDown()
 		case "<C-b>":
-			boardPanel.PageUp()
+			boardPanel.ScrollPageUp()
 		case "g":
 			if previousKey == "g" {
 				boardPanel.ScrollTop()

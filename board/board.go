@@ -3,6 +3,7 @@ package board
 import (
 	"log"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
@@ -25,6 +26,7 @@ type Thread struct {
 
 // Message contains information about a Maniac Forum Message. Single response to a Thread.
 type Message struct {
+	ID              string
 	Content         string
 	Link            string
 	Topic           string
@@ -82,6 +84,8 @@ func GetMessage(resource string) Message {
 
 	var m Message
 	m.Link = resource
+	values, _ := url.ParseQuery(resource)
+	m.ID = values.Get("msgid")
 
 	doc := getDoc(resource)
 
@@ -105,11 +109,11 @@ func GetMessage(resource string) Message {
 	return m
 }
 
-var boardURL = "https://www.maniac-forum.de/forum/"
+var BoardURL = "https://www.maniac-forum.de/forum/"
 
 func getDoc(resource string) *goquery.Document {
 	// Request the HTML page.
-	res, err := http.Get(boardURL + resource)
+	res, err := http.Get(BoardURL + resource)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -135,6 +139,7 @@ func GetBoard(resource string) Board {
 
 	// TODO Get from actual board
 	board.Title = "Smalltalk"
+	board.ID = "1"
 
 	// Find the review items
 	doc.Find("#threadlist > a").Each(func(i int, s *goquery.Selection) {
