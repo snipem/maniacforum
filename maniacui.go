@@ -1,4 +1,4 @@
-//run: tmux send-keys -t right "C-c"; sleep 0.1; tmux send-keys -t right "go run maniacui.go" "C-m"
+//run: tmux send-keys -t right "C-c"; sleep 0.1; tmux send-keys -t right "go run maniacui.go" "C-m"; tmux select-pane -t right
 package main
 
 import (
@@ -15,6 +15,7 @@ import (
 	"github.com/gizak/termui/widgets"
 )
 
+// TODO Get rid of global variables
 var innerThreads board.Thread
 var forum board.Board
 var threadPanel *widgets.List
@@ -42,19 +43,20 @@ func answer() {
 
 // loadThread loads selected thread from board and displays the first message
 func loadThread() {
-	message := board.GetMessage(threads[boardPanel.SelectedRow].Link)
+	message = board.GetMessage(threads[boardPanel.SelectedRow].Link)
 	innerThreads = board.GetThread(threads[boardPanel.SelectedRow].ID)
 
 	// Clear thread panel
 	threadPanel.Rows = nil
 	threadPanel.SelectedRow = 0
-	for _, message := range innerThreads.Messages {
+	for _, m := range innerThreads.Messages {
 		threadPanel.Rows = append(
 			threadPanel.Rows,
-			strings.Repeat("    ", message.Hierarchy-1)+
-				"○ "+message.Topic+" ["+message.Date+" "+message.Author.Name+"](fg:white)")
+			strings.Repeat("    ", m.Hierarchy-1)+
+				"○ "+m.Topic+" ["+m.Date+" "+m.Author.Name+"](fg:white)")
 	}
-	messagePanel.Text = message.Content
+	message.EnrichedContent, message.Links = util.EnrichLinks(message.Content)
+	messagePanel.Text = util.FormatQuote(message.EnrichedContent)
 }
 
 func openLink(nr int) {
