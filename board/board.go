@@ -51,8 +51,8 @@ type User struct {
 }
 
 // GetThread fatches a Thread based on a Thread id
-func GetThread(id string) Thread {
-	resource := "pxmboard.php?mode=thread&brdid=1&thrdid=" + id
+func GetThread(threadID string, boardID string) Thread {
+	resource := "pxmboard.php?mode=thread&brdid=" + boardID + "&thrdid=" + threadID
 	var t Thread
 	doc := getDoc(resource)
 
@@ -131,15 +131,16 @@ func getDoc(resource string) *goquery.Document {
 
 }
 
-func GetBoard(resource string) Board {
+func GetBoard(boardID string) Board {
 
 	var board Board
 
+	resource := "pxmboard.php?mode=threadlist&brdid=" + boardID + "&sortorder=last"
 	doc := getDoc(resource)
 
 	// TODO Get from actual board
 	board.Title = "Smalltalk"
-	board.ID = "1"
+	board.ID = boardID
 
 	// Find the review items
 	doc.Find("#threadlist > a").Each(func(i int, s *goquery.Selection) {

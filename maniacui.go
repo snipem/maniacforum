@@ -18,15 +18,28 @@ import (
 // TODO Get rid of global variables
 var innerThreads board.Thread
 var forum board.Board
+
 var threadPanel *widgets.List
 var messagePanel *widgets.Paragraph
 var boardPanel *widgets.List
+var tabpane *widgets.TabPane
+
 var threads []board.Thread
 var message board.Message
 
 func loadBoard() {
-	forum = board.GetBoard("pxmboard.php?mode=threadlist&brdid=1&sortorder=last")
+	tabNr := strconv.Itoa(tabpane.ActiveTabIndex + 1)
+	forum = board.GetBoard(tabNr)
 	threads = forum.Threads
+
+	// Clear board panel
+	boardPanel.Rows = nil
+	messagePanel.Text = ""
+	threadPanel.Rows = nil
+
+	boardPanel.SelectedRow = 0
+	threadPanel.SelectedRow = 0
+
 	for _, thread := range threads {
 		boardPanel.Rows = append(boardPanel.Rows, thread.Title+" ["+thread.Date+"](fg:white)")
 	}
@@ -47,7 +60,7 @@ func answer() {
 // loadThread loads selected thread from board and displays the first message
 func loadThread() {
 	message = board.GetMessage(threads[boardPanel.SelectedRow].Link)
-	innerThreads = board.GetThread(threads[boardPanel.SelectedRow].ID)
+	innerThreads = board.GetThread(threads[boardPanel.SelectedRow].ID, forum.ID)
 
 	// Clear thread panel
 	threadPanel.Rows = nil
@@ -69,6 +82,12 @@ func openLink(nr int) {
 	open.Run(cleanedLink)
 }
 
+func initialize() {
+	// Initialize
+	loadBoard()
+	loadThread()
+}
+
 func main() {
 
 	if err := ui.Init(); err != nil {
@@ -80,11 +99,14 @@ func main() {
 	boardPanel = widgets.NewList()
 	threadPanel = widgets.NewList()
 
-	// Initialize
-	loadBoard()
-	loadThread()
+	tabpane = widgets.NewTabPane("Smalltalk", "O/T")
+	// tabpane.SetRect(0, 1, 50, 4)
+	tabpane.Border = false
+	tabpane.ActiveTabIndex = 0
 
-	boardPanel.Title = forum.Title
+	initialize()
+
+	// boardPanel.Title = forum.Title
 
 	boardPanel.TextStyle = ui.NewStyle(ui.ColorRed)
 	threadPanel.TextStyle = ui.NewStyle(ui.ColorRed)
@@ -93,17 +115,29 @@ func main() {
 	grid := ui.NewGrid()
 
 	grid.Set(
-		ui.NewCol(1.0/2,
-			ui.NewRow(1.0/2, boardPanel),
-			ui.NewRow(1.0/2, threadPanel),
+		ui.NewRow(0.05, tabpane),
+		ui.NewRow(0.95,
+			ui.NewCol(1.0/2,
+				ui.NewRow(0.5, boardPanel),
+				ui.NewRow(0.5, threadPanel),
+			),
+			ui.NewCol(1.0/2, messagePanel),
 		),
-		ui.NewCol(1.0/2, messagePanel),
 	)
 
 	termWidth, termHeight := ui.TerminalDimensions()
 	grid.SetRect(0, 0, termWidth, termHeight)
 
 	ui.Render(grid)
+
+	renderTab := func() {
+		switch tabpane.ActiveTabIndex {
+		case 0:
+			ui.Render(grid)
+		case 1:
+			ui.Render(grid)
+		}
+	}
 
 	previousKey := ""
 	uiEvents := ui.PollEvents()
@@ -117,6 +151,16 @@ func main() {
 			answer()
 		case "q", "<C-c>":
 			return
+		case "b":
+			tabpane.FocusLeft()
+			ui.Clear()
+			renderTab()
+			initialize()
+		case "n":
+			tabpane.FocusRight()
+			ui.Clear()
+			renderTab()
+			initialize()
 		case "J", "<Down>":
 			boardPanel.ScrollDown()
 			loadThread()
@@ -155,6 +199,8 @@ func main() {
 			previousKey = e.ID
 		}
 
-		ui.Render(boardPanel, messagePanel, threadPanel)
+		renderTab()
+		ui.Render(boardPanel, messagePanel, threadPanel, tabpane)
+
 	}
 }

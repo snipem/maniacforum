@@ -7,7 +7,7 @@ import (
 )
 
 func TestBoard(t *testing.T) {
-	forum := GetBoard("pxmboard.php?mode=threadlist&brdid=1&sortorder=last")
+	forum := GetBoard("1")
 	threads := forum.Threads
 
 	// TODO Flaky, because it sticks to the sticky note
@@ -19,7 +19,7 @@ func TestBoard(t *testing.T) {
 }
 
 func TestThread(t *testing.T) {
-	thread := GetThread("173448")
+	thread := GetThread("173448", "1")
 	if len(thread.Messages) == 0 {
 		t.Errorf("No messages returned")
 	}
