@@ -9,8 +9,12 @@ import (
 func TestBoard(t *testing.T) {
 	forum := GetBoard("pxmboard.php?mode=threadlist&brdid=1&sortorder=last")
 	threads := forum.Threads
-	// TODO Flaky
-	assert.Equal(t, "02.12.17 10:32", threads[0].Date)
+
+	// TODO Flaky, because it sticks to the sticky note
+	// TODO Extract number of responses from Date
+	assert.Contains(t, threads[0].Date, "02.12.17 10:32")
+	assert.Equal(t, "1", forum.ID)
+	assert.Equal(t, "Smalltalk", forum.Title)
 
 }
 
