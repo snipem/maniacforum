@@ -24,7 +24,7 @@ var threads []board.Thread
 var message board.Message
 
 func loadBoard() {
-	forum := board.GetBoard("pxmboard.php?mode=threadlist&brdid=1&sortorder=last")
+	forum = board.GetBoard("pxmboard.php?mode=threadlist&brdid=1&sortorder=last")
 	threads = forum.Threads
 }
 
