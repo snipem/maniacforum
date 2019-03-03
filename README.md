@@ -11,5 +11,5 @@
 ### Release new version
 
 	git tag 0.0.2
-	goreleaser release --skip-publish --rm-dist
+	goreleaser release --rm-dist
 
