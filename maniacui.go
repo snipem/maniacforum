@@ -27,6 +27,9 @@ var message board.Message
 func loadBoard() {
 	forum = board.GetBoard("pxmboard.php?mode=threadlist&brdid=1&sortorder=last")
 	threads = forum.Threads
+	for _, thread := range threads {
+		boardPanel.Rows = append(boardPanel.Rows, thread.Title+" ["+thread.Date+"](fg:white)")
+	}
 }
 
 func loadMessage() {
@@ -77,13 +80,11 @@ func main() {
 	boardPanel = widgets.NewList()
 	threadPanel = widgets.NewList()
 
+	// Initialize
 	loadBoard()
+	loadThread()
 
 	boardPanel.Title = forum.Title
-
-	for _, thread := range threads {
-		boardPanel.Rows = append(boardPanel.Rows, thread.Title+" ["+thread.Date+"](fg:white)")
-	}
 
 	boardPanel.TextStyle = ui.NewStyle(ui.ColorRed)
 	threadPanel.TextStyle = ui.NewStyle(ui.ColorRed)
