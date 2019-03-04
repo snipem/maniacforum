@@ -55,6 +55,7 @@ func loadMessage() {
 		message = board.GetMessage(innerThreads.Messages[threadPanel.SelectedRow].Link)
 		message.EnrichedContent, message.Links = util.EnrichLinks(message.Content)
 		messagePanel.Rows = strings.Split(util.FormatQuote(message.EnrichedContent), "\n")
+		messagePanel.ScrollTop()
 	}
 }
 
@@ -78,6 +79,7 @@ func loadThread() {
 	}
 	message.EnrichedContent, message.Links = util.EnrichLinks(message.Content)
 	messagePanel.Rows = strings.Split(util.FormatQuote(message.EnrichedContent), "\n")
+	messagePanel.ScrollTop()
 }
 
 func openLink(nr int) {
@@ -223,8 +225,7 @@ func main() {
 				threadPanel.ScrollDown()
 				loadMessage()
 			case 3:
-				// TODO Does not work
-				messagePanel.ScrollHalfPageDown()
+				messagePanel.ScrollPageDown()
 			}
 		case "<Up>":
 			switch activePane {
@@ -235,8 +236,7 @@ func main() {
 				threadPanel.ScrollUp()
 				loadMessage()
 			case 3:
-				// TODO Does not work
-				messagePanel.ScrollHalfPageUp()
+				messagePanel.ScrollPageUp()
 			}
 		case "J":
 			boardPanel.ScrollDown()
