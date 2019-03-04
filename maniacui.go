@@ -18,6 +18,7 @@ import (
 // TODO Get rid of global variables
 var innerThreads board.Thread
 var forum board.Board
+var f board.Forum
 
 var threadPanel *widgets.List
 var messagePanel *widgets.Paragraph
@@ -28,8 +29,9 @@ var threads []board.Thread
 var message board.Message
 
 func loadBoard() {
-	tabNr := strconv.Itoa(tabpane.ActiveTabIndex + 1)
-	forum = board.GetBoard(tabNr)
+	// tabNr := strconv.Itoa(tabpane.ActiveTabIndex + 1)
+	boardID := f.Boards[tabpane.ActiveTabIndex].ID
+	forum = board.GetBoard(boardID)
 	threads = forum.Threads
 
 	// Clear board panel
@@ -82,6 +84,20 @@ func openLink(nr int) {
 	open.Run(cleanedLink)
 }
 
+func loadForum() {
+	f = board.GetForum()
+	var boardNames []string
+
+	for _, thread := range f.Boards {
+		boardNames = append(boardNames, thread.Title)
+	}
+
+	tabpane = widgets.NewTabPane(boardNames...)
+	// tabpane.SetRect(0, 1, 50, 4)
+	tabpane.Border = false
+	tabpane.ActiveTabIndex = 0
+}
+
 func initialize() {
 	// Initialize
 	loadBoard()
@@ -99,11 +115,7 @@ func main() {
 	boardPanel = widgets.NewList()
 	threadPanel = widgets.NewList()
 
-	tabpane = widgets.NewTabPane("Smalltalk", "O/T")
-	// tabpane.SetRect(0, 1, 50, 4)
-	tabpane.Border = false
-	tabpane.ActiveTabIndex = 0
-
+	loadForum()
 	initialize()
 
 	// boardPanel.Title = forum.Title

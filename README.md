@@ -2,6 +2,9 @@
 
 ## Todo
 
+* Actually scrape tabs
+* Change license
+* Add scrolling message dialogue
 * Add dynamic resizing
 * Add help
 
