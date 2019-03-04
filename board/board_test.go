@@ -6,6 +6,17 @@ import (
 	"testing"
 )
 
+func TestForum(t *testing.T) {
+
+	maniacforum := GetForum()
+	assert.Equal(t, "1", maniacforum.Boards[0].ID)
+	assert.Equal(t, "2", maniacforum.Boards[1].ID)
+	assert.Equal(t, "4", maniacforum.Boards[2].ID)
+	assert.Equal(t, "6", maniacforum.Boards[3].ID)
+	assert.Equal(t, "26", maniacforum.Boards[4].ID)
+	assert.Equal(t, "8", maniacforum.Boards[5].ID)
+}
+
 func TestBoard(t *testing.T) {
 	forum := GetBoard("1")
 	threads := forum.Threads

@@ -11,6 +11,11 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
+// Forum represents the whole forum
+type Forum struct {
+	Boards []Board
+}
+
 // Thread contains information about a Maniac Forum Thread
 type Thread struct {
 	ID             string
@@ -129,6 +134,39 @@ func getDoc(resource string) *goquery.Document {
 	}
 	return doc
 
+}
+
+// GetForum retuns the whole forum
+func GetForum() Forum {
+	// TODO Scrape this
+	return Forum{
+		[]Board{
+			Board{
+				ID:    "1",
+				Title: "Smalltalk",
+			},
+			Board{
+				ID:    "2",
+				Title: "For Sale",
+			},
+			Board{
+				ID:    "4",
+				Title: "Tech'n'Cheats",
+			},
+			Board{
+				ID:    "6",
+				Title: "OT",
+			},
+			Board{
+				ID:    "26",
+				Title: "Filme & Serien",
+			},
+			Board{
+				ID:    "8",
+				Title: "Online Gaming",
+			},
+		},
+	}
 }
 
 func GetBoard(boardID string) Board {
