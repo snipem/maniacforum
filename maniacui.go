@@ -28,6 +28,9 @@ var tabpane *widgets.TabPane
 var threads []board.Thread
 var message board.Message
 
+var activePane int
+var maxPane = 3
+
 func loadBoard() {
 	// tabNr := strconv.Itoa(tabpane.ActiveTabIndex + 1)
 	boardID := f.Boards[tabpane.ActiveTabIndex].ID
@@ -104,12 +107,42 @@ func initialize() {
 	loadThread()
 }
 
+func colorize() {
+	inactiveColor := ui.ColorWhite
+	activeColor := ui.ColorRed
+
+	boardPanel.TextStyle = ui.NewStyle(activeColor)
+	threadPanel.TextStyle = ui.NewStyle(activeColor)
+	tabpane.ActiveTabStyle = ui.NewStyle(activeColor)
+
+	boardPanel.BorderStyle = ui.NewStyle(inactiveColor)
+	threadPanel.BorderStyle = ui.NewStyle(inactiveColor)
+	tabpane.BorderStyle = ui.NewStyle(inactiveColor)
+	messagePanel.BorderStyle = ui.NewStyle(inactiveColor)
+
+	switch activePane {
+	case 1:
+		boardPanel.TextStyle = ui.NewStyle(activeColor)
+		boardPanel.BorderStyle = ui.NewStyle(activeColor)
+	case 2:
+		threadPanel.TextStyle = ui.NewStyle(activeColor)
+		threadPanel.BorderStyle = ui.NewStyle(activeColor)
+	case 3:
+		messagePanel.BorderStyle = ui.NewStyle(activeColor)
+
+	}
+
+}
+
 func main() {
 
 	if err := ui.Init(); err != nil {
 		log.Fatalf("failed to initialize termui: %v", err)
 	}
 	defer ui.Close()
+
+	// Activate Board Pane first
+	activePane = 1
 
 	messagePanel = widgets.NewParagraph()
 	boardPanel = widgets.NewList()
@@ -118,11 +151,8 @@ func main() {
 	loadForum()
 	initialize()
 
-	// boardPanel.Title = forum.Title
-
-	boardPanel.TextStyle = ui.NewStyle(ui.ColorRed)
-	threadPanel.TextStyle = ui.NewStyle(ui.ColorRed)
 	boardPanel.WrapText = false
+	colorize()
 
 	grid := ui.NewGrid()
 
@@ -156,6 +186,13 @@ func main() {
 	for {
 		e := <-uiEvents
 		switch e.ID {
+		case "<Tab>":
+			if activePane < maxPane {
+				activePane++
+			} else {
+				activePane = 1
+			}
+			colorize()
 		case "1", "2", "3", "4", "5", "6", "7", "8", "9", "0":
 			linkNr, _ := strconv.Atoi(e.ID)
 			openLink(linkNr)
@@ -164,19 +201,40 @@ func main() {
 		case "q", "<C-c>":
 			return
 		case "b":
+		case "<Left>":
 			tabpane.FocusLeft()
 			ui.Clear()
 			renderTab()
 			initialize()
 		case "n":
+		case "<Right>":
 			tabpane.FocusRight()
 			ui.Clear()
 			renderTab()
 			initialize()
-		case "J", "<Down>":
+		case "<Down>":
+			switch activePane {
+			case 1:
+				boardPanel.ScrollDown()
+				loadThread()
+			case 2:
+				threadPanel.ScrollDown()
+				loadMessage()
+			case 3:
+			}
+		case "<Up>":
+			switch activePane {
+			case 1:
+				boardPanel.ScrollUp()
+				loadThread()
+			case 2:
+				threadPanel.ScrollUp()
+				loadMessage()
+			}
+		case "J":
 			boardPanel.ScrollDown()
 			loadThread()
-		case "K", "<Up>":
+		case "K":
 			boardPanel.ScrollUp()
 			loadThread()
 		case "j":
