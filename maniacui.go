@@ -21,7 +21,7 @@ var forum board.Board
 var f board.Forum
 
 var threadPanel *widgets.List
-var messagePanel *widgets.Paragraph
+var messagePanel *widgets.List
 var boardPanel *widgets.List
 var tabpane *widgets.TabPane
 
@@ -39,7 +39,7 @@ func loadBoard() {
 
 	// Clear board panel
 	boardPanel.Rows = nil
-	messagePanel.Text = ""
+	messagePanel.Rows = nil
 	threadPanel.Rows = nil
 
 	boardPanel.SelectedRow = 0
@@ -54,7 +54,7 @@ func loadMessage() {
 	if len(innerThreads.Messages) > 0 {
 		message = board.GetMessage(innerThreads.Messages[threadPanel.SelectedRow].Link)
 		message.EnrichedContent, message.Links = util.EnrichLinks(message.Content)
-		messagePanel.Text = util.FormatQuote(message.EnrichedContent)
+		messagePanel.Rows = strings.Split(util.FormatQuote(message.EnrichedContent), "\n")
 	}
 }
 
@@ -77,7 +77,7 @@ func loadThread() {
 				"○ "+m.Topic+" ["+m.Date+" "+m.Author.Name+"](fg:white)")
 	}
 	message.EnrichedContent, message.Links = util.EnrichLinks(message.Content)
-	messagePanel.Text = util.FormatQuote(message.EnrichedContent)
+	messagePanel.Rows = strings.Split(util.FormatQuote(message.EnrichedContent), "\n")
 }
 
 func openLink(nr int) {
@@ -144,9 +144,11 @@ func main() {
 	// Activate Board Pane first
 	activePane = 1
 
-	messagePanel = widgets.NewParagraph()
+	messagePanel = widgets.NewList()
 	boardPanel = widgets.NewList()
 	threadPanel = widgets.NewList()
+
+	messagePanel.WrapText = true
 
 	loadForum()
 	initialize()
@@ -221,6 +223,8 @@ func main() {
 				threadPanel.ScrollDown()
 				loadMessage()
 			case 3:
+				// TODO Does not work
+				messagePanel.ScrollHalfPageDown()
 			}
 		case "<Up>":
 			switch activePane {
@@ -230,6 +234,9 @@ func main() {
 			case 2:
 				threadPanel.ScrollUp()
 				loadMessage()
+			case 3:
+				// TODO Does not work
+				messagePanel.ScrollHalfPageUp()
 			}
 		case "J":
 			boardPanel.ScrollDown()
