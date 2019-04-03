@@ -1,3 +1,7 @@
+# maniacforum parameters
+BINARY_NAME=maniacforum
+TAG_VERSION=0.0.4
+
 # Go parameters
 GOCMD=go
 GOBUILD=$(GOCMD) build
@@ -6,7 +10,6 @@ GOTEST=$(GOCMD) test
 GOINSTALL=$(GOCMD) install -v
 GOGET=$(GOCMD) get
 BINARY_NAME=maniacforum
-BINARY_UNIX=$(BINARY_NAME)_unix
 
 all: test build install
 build:
@@ -25,3 +28,7 @@ install:
 deps:
 		$(GOGET) github.com/skratchdot/open-golang/open
 		$(GOGET) github.com/gizak/termui
+
+release:
+		git tag $(TAG_VERSION)
+		goreleaser release --rm-dist
