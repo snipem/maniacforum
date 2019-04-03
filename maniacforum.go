@@ -44,7 +44,7 @@ Kontext-Steuerung
 ------------------
 
 <Tab> - Fokus-Wechsel auf Boards, Threads, Unterthreads und Nachrichten
- ↓ ↑  - Zur Auswahl im aktuellen ausgewählten Menü
+ ↑ ↓  - Zur Auswahl im aktuellen ausgewählten Menü
  ← →  - Auswahl des Boards
    ?  - Hilfsseite
 
