@@ -23,10 +23,3 @@
 * Add scrolling message dialogue
 * Add dynamic resizing
 
-## Development
-
-### Release new version
-
-	git tag 0.0.2
-	goreleaser release --rm-dist
-
