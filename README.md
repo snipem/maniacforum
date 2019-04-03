@@ -2,6 +2,10 @@
 
 ![Maniacforum Screenshot](res/maniacforum.png "Maniacforum Screenshot")
 
+## Download
+
+Downloads finden sich in den [Releases](/releases)
+
 ## Hilfe
 
 ### Kontext-Steuerung
