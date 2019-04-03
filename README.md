@@ -23,3 +23,9 @@
 * Add scrolling message dialogue
 * Add dynamic resizing
 
+## Development
+
+## Releasing
+
+    make TAG_VERSION=0.0.12 release
+
