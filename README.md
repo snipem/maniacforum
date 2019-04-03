@@ -8,6 +8,7 @@
      ↑ ↓  - Zur Auswahl im aktuellen ausgewählten Menü
      ← →  - Auswahl des Boards
        ?  - Hilfsseite
+       q  - Beenden
 
 ### Globale Steuerung
 
