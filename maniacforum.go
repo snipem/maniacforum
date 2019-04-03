@@ -1,8 +1,10 @@
-//run: tmux send-keys -t right "C-c"; sleep 0.1; tmux send-keys -t right "go run maniacui.go" "C-m"; tmux select-pane -t right
+//run: tmux send-keys -t right "C-c"; sleep 0.1; tmux send-keys -t right "go run maniacforum.go" "C-m"; tmux select-pane -t right
 package main
 
 import (
+	"fmt"
 	"log"
+	"os"
 	"strconv"
 
 	"strings"
@@ -31,7 +33,11 @@ var message board.Message
 var activePane int
 var maxPane = 3
 
-var helpPage = `Hilfe
+var version = "1.0"
+
+var helpPage = `maniacforum ` + version + `
+
+Hilfe
 ======
 
 Kontext-Steuerung
@@ -49,6 +55,8 @@ Globale Steuerung
    k  - Vorheriger Unterthread
    J  - Nächster Thread
    K  - Vorheriger Thread
+
+https://github.com/snipem/maniacforum
 `
 
 func loadBoard() {
@@ -158,6 +166,11 @@ func colorize() {
 
 func main() {
 
+	if len(os.Args) > 1 {
+		fmt.Printf(helpPage)
+		os.Exit(0)
+	}
+
 	if err := ui.Init(); err != nil {
 		log.Fatalf("failed to initialize termui: %v", err)
 	}
@@ -225,7 +238,7 @@ func main() {
 		case "q", "<C-c>":
 			return
 		case "?":
-			messagePanel.Rows = strings.Split(helpPage, "\n")
+			messagePanel.Rows = strings.Split(util.FormatQuote(helpPage), "\n")
 		case "b":
 		case "<Left>":
 			tabpane.FocusLeft()
