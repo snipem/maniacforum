@@ -9,6 +9,7 @@
      ← →  - Auswahl des Boards
        ?  - Hilfsseite
        q  - Beenden
+     0-9  - Links im Standard-Browser öffnen
 
 ### Globale Steuerung
 
