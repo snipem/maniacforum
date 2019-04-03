@@ -1,5 +1,7 @@
 # Maniac Forum UI
 
+![Maniacforum Screenshot](res/maniacforum.png "Maniacforum Screenshot")
+
 ## Hilfe
 
 ### Kontext-Steuerung
