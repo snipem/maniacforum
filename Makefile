@@ -1,6 +1,6 @@
 # maniacforum parameters
 BINARY_NAME=maniacforum
-TAG_VERSION=0.0.4
+TAG_VERSION=0.0.6
 
 # Go parameters
 GOCMD=go
