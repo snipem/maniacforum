@@ -4,7 +4,7 @@
 
 ## Download
 
-Downloads finden sich in den [Releases](/releases)
+Downloads für diverse Betriebssysteme finden sich in den [Releases](https://github.com/snipem/maniacforum/releases)
 
 ## Hilfe
 
@@ -24,15 +24,16 @@ Downloads finden sich in den [Releases](/releases)
        J  - Nächster Thread
        K  - Vorheriger Thread
 
-## Todo
+
+## Development
+
+### Todo
 
 * Actually scrape tabs
 * Add scrolling message dialogue
 * Add dynamic resizing
 
-## Development
-
-## Releasing
+### Releasing
 
     make TAG_VERSION=0.0.12 release
 
