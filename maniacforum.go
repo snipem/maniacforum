@@ -1,4 +1,4 @@
-//run: tmux send-keys -t right "C-c"; sleep 0.1; tmux send-keys -t right "go run maniacforum.go" "C-m"; tmux select-pane -t right
+//run: tmux send-keys -t right "C-c"; sleep 0.1; tmux send-keys -t right "make run" "C-m"; tmux select-pane -t right
 package main
 
 import (
