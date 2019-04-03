@@ -31,6 +31,26 @@ var message board.Message
 var activePane int
 var maxPane = 3
 
+var helpPage = `Hilfe
+======
+
+Kontext-Steuerung
+------------------
+
+<Tab> - Fokus-Wechsel auf Boards, Threads, Unterthreads und Nachrichten
+ ↓ ↑  - Zur Auswahl im aktuellen ausgewählten Menü
+ ← →  - Auswahl des Boards
+   ?  - Hilfsseite
+
+Globale Steuerung
+-----------------
+
+   j  - Nächster Unterthread
+   k  - Vorheriger Unterthread
+   J  - Nächster Thread
+   K  - Vorheriger Thread
+`
+
 func loadBoard() {
 	// tabNr := strconv.Itoa(tabpane.ActiveTabIndex + 1)
 	boardID := f.Boards[tabpane.ActiveTabIndex].ID
@@ -204,6 +224,8 @@ func main() {
 			answer()
 		case "q", "<C-c>":
 			return
+		case "?":
+			messagePanel.Rows = strings.Split(helpPage, "\n")
 		case "b":
 		case "<Left>":
 			tabpane.FocusLeft()
