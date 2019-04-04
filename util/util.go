@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+// EnrichLinks enriches links in content with numbers, returns enriched content and list of links
 func EnrichLinks(content string) (string, []string) {
 	var enrichedContent = content
 	var links []string
@@ -20,6 +21,7 @@ func EnrichLinks(content string) (string, []string) {
 
 }
 
+// FormatQuote formats a quote with TermUi specific color formatting
 func FormatQuote(unformatted string) string {
 	r := regexp.MustCompile("^>.*$")
 	formatted := ""
