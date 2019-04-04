@@ -17,6 +17,8 @@ import (
 	"github.com/gizak/termui/widgets"
 )
 
+// Forum > Board > Threads > Message
+
 // TODO Get rid of global variables
 var innerThreads board.Thread
 var forum board.Board
@@ -63,7 +65,6 @@ https://github.com/snipem/maniacforum
 `
 
 func loadBoard() {
-	// tabNr := strconv.Itoa(tabpane.ActiveTabIndex + 1)
 	boardID := f.Boards[tabpane.ActiveTabIndex].ID
 	forum = board.GetBoard(boardID)
 	threads = forum.Threads
@@ -90,6 +91,7 @@ func loadMessage() {
 	}
 }
 
+// answer uses the default system browser to open the answer link of the currently selected message
 func answer() {
 	open.Run(board.BoardURL + "pxmboard.php?mode=messageform&brdid=" + forum.ID + "&msgid=" + message.ID)
 }
@@ -113,6 +115,7 @@ func loadThread() {
 	messagePanel.ScrollTop()
 }
 
+// openLinks opens a link in the displayed message with the default system browser
 func openLink(nr int) {
 	link := message.Links[nr-1]
 	cleanedLink := strings.Replace(link, "[", "", 1)
@@ -140,6 +143,7 @@ func initialize() {
 	loadThread()
 }
 
+// colorize the ui depending on the active pane
 func colorize() {
 	inactiveColor := ui.ColorWhite
 	activeColor := ui.ColorRed
