@@ -21,8 +21,8 @@ import (
 
 // TODO Get rid of global variables
 var innerThreads board.Thread
-var forum board.Board
-var f board.Forum
+var activeBoard board.Board
+var activeForum board.Forum
 
 var threadPanel *widgets.List
 var messagePanel *widgets.List
@@ -65,9 +65,9 @@ https://github.com/snipem/maniacforum
 `
 
 func loadBoard() {
-	boardID := f.Boards[tabpane.ActiveTabIndex].ID
-	forum = board.GetBoard(boardID)
-	threads = forum.Threads
+	boardID := activeForum.Boards[tabpane.ActiveTabIndex].ID
+	activeBoard = board.GetBoard(boardID)
+	threads = activeBoard.Threads
 
 	// Clear board panel
 	boardPanel.Rows = nil
@@ -93,13 +93,13 @@ func loadMessage() {
 
 // answer uses the default system browser to open the answer link of the currently selected message
 func answer() {
-	open.Run(board.BoardURL + "pxmboard.php?mode=messageform&brdid=" + forum.ID + "&msgid=" + message.ID)
+	open.Run(board.BoardURL + "pxmboard.php?mode=messageform&brdid=" + activeBoard.ID + "&msgid=" + message.ID)
 }
 
 // loadThread loads selected thread from board and displays the first message
 func loadThread() {
 	message = board.GetMessage(threads[boardPanel.SelectedRow].Link)
-	innerThreads = board.GetThread(threads[boardPanel.SelectedRow].ID, forum.ID)
+	innerThreads = board.GetThread(threads[boardPanel.SelectedRow].ID, activeBoard.ID)
 
 	// Clear thread panel
 	threadPanel.Rows = nil
@@ -124,10 +124,10 @@ func openLink(nr int) {
 }
 
 func loadForum() {
-	f = board.GetForum()
+	activeForum = board.GetForum()
 	var boardNames []string
 
-	for _, thread := range f.Boards {
+	for _, thread := range activeForum.Boards {
 		boardNames = append(boardNames, thread.Title)
 	}
 
