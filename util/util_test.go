@@ -28,14 +28,8 @@ nox
 }
 
 func TestQuoteFormatting(t *testing.T) {
-	formatted := FormatQuote("> Test")
-	if formatted != "[> Test](fg:red)" {
-		t.Errorf("Message was '%s' not expected", formatted)
-	}
 
-	if FormatQuote("nothing to format") != "nothing to format" {
-		t.Errorf("Message was not expected")
-	}
+	assert.Equal(t, FormatQuote("> Test"), "[> Test](fg:red)")
 
 	have := `Bla
 > Test 123
@@ -45,17 +39,14 @@ Ergebnis`
 [> Test 123](fg:red)
 Ergebnis`
 
-	got := FormatQuote(have)
-
-	if got != want {
-		t.Errorf("Message was not expected")
-	}
+	assert.Equal(t, FormatQuote(have), want)
 }
 
 func TestQuoteFormattingNothingToFormat(t *testing.T) {
-	// Check nothing to format
+	assert.Equal(t, FormatQuote("nothing to format"), "nothing to format")
+
 	origin := "[http://eins.de]"
-	formatted := FormatQuote(origin)
-	assert.Contains(t, formatted, origin)
+	have := FormatQuote(origin)
+	assert.Equal(t, have, origin)
 
 }
