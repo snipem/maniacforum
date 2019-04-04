@@ -13,6 +13,7 @@ Downloads für diverse Betriebssysteme finden sich in den [Releases](https://git
     <Tab> - Fokus-Wechsel auf Boards, Threads, Unterthreads und Nachrichten
      ↑ ↓  - Zur Auswahl im aktuellen ausgewählten Menü
      ← →  - Auswahl des Boards
+       a  - Auf Nachricht im Standard-Browser antworten
        ?  - Hilfsseite
        q  - Beenden
      0-9  - Links im Standard-Browser öffnen
