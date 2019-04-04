@@ -28,6 +28,12 @@ Downloads für diverse Betriebssysteme finden sich in den [Releases](https://git
 
 ## Development
 
+### Feature Requests
+
+* Native posting without browser - deli-
+* Boss key - Stitch
+* Add read / unread status - mat
+
 ### Todo
 
 * Actually scrape tabs
