@@ -20,7 +20,7 @@ import (
 // Forum > Board > Threads > Message
 
 // TODO Get rid of global variables
-var innerThreads board.Thread
+var activeThreads board.Thread
 var activeBoard board.Board
 var activeForum board.Forum
 
@@ -83,8 +83,8 @@ func loadBoard() {
 }
 
 func loadMessage() {
-	if len(innerThreads.Messages) > 0 {
-		message = board.GetMessage(innerThreads.Messages[threadPanel.SelectedRow].Link)
+	if len(activeThreads.Messages) > 0 {
+		message = board.GetMessage(activeThreads.Messages[threadPanel.SelectedRow].Link)
 		message.EnrichedContent, message.Links = util.EnrichLinks(message.Content)
 		messagePanel.Rows = strings.Split(util.FormatQuote(message.EnrichedContent), "\n")
 		messagePanel.ScrollTop()
@@ -99,12 +99,12 @@ func answer() {
 // loadThread loads selected thread from board and displays the first message
 func loadThread() {
 	message = board.GetMessage(threads[boardPanel.SelectedRow].Link)
-	innerThreads = board.GetThread(threads[boardPanel.SelectedRow].ID, activeBoard.ID)
+	activeThreads = board.GetThread(threads[boardPanel.SelectedRow].ID, activeBoard.ID)
 
 	// Clear thread panel
 	threadPanel.Rows = nil
 	threadPanel.SelectedRow = 0
-	for _, m := range innerThreads.Messages {
+	for _, m := range activeThreads.Messages {
 		threadPanel.Rows = append(
 			threadPanel.Rows,
 			strings.Repeat("    ", m.Hierarchy-1)+
