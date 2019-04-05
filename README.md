@@ -1,5 +1,8 @@
 # Maniac Forum UI
 
+[![Build Status](https://travis-ci.com/snipem/maniacforum.svg?branch=master)](https://travis-ci.com/snipem/maniacforum)
+[![Coverage Status](https://coveralls.io/repos/github/snipem/maniacforum/badge.svg)](https://coveralls.io/github/snipem/maniacforum)
+
 ![Maniacforum Screenshot](res/maniacforum.png "Maniacforum Screenshot")
 
 ## Download

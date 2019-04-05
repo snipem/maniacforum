@@ -31,6 +31,8 @@ install:
 deps:
 		$(GOGET) github.com/skratchdot/open-golang/open
 		$(GOGET) github.com/gizak/termui
+		$(GOGET) github.com/PuerkitoBio/goquery
+		$(GOGET) github.com/stretchr/testify/assert
 
 release:
 		git tag $(TAG_VERSION)
