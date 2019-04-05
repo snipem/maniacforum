@@ -4,6 +4,7 @@ BINARY_NAME=maniacforum
 # Go parameters
 GOCMD=go
 GOBUILD=$(GOCMD) build
+GORUN=$(GOCMD) run
 GOCLEAN=$(GOCMD) clean
 GOTEST=$(GOCMD) test
 GOINSTALL=$(GOCMD) install -v
@@ -20,6 +21,9 @@ clean:
 		rm -f $(BINARY_NAME)
 		rm -f $(BINARY_UNIX)
 run:
+		$(GORUN) maniacforum.go
+
+run_binary:
 		$(GOBUILD) -o $(BINARY_NAME)
 		./$(BINARY_NAME)
 install:
