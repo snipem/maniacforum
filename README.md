@@ -9,6 +9,8 @@
 
 Downloads für diverse Betriebssysteme finden sich in den [Releases](https://github.com/snipem/maniacforum/releases)
 
+Oder alternativ `go get github.com/snipem/maniacforum`.
+
 ## Hilfe
 
 ### Kontext-Steuerung
