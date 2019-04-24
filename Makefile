@@ -20,8 +20,12 @@ clean:
 		$(GOCLEAN)
 		rm -f $(BINARY_NAME)
 		rm -f $(BINARY_UNIX)
+
 run:
-		$(GORUN) maniacforum.go
+		$(GOCMD) run maniacforum.go
+	
+ui:
+		tmux send-keys -t right "C-c"; sleep 0.1; tmux send-keys -t right "cd ${GOPATH}/src/github.com/snipem/maniacforum && make run" "C-m"; tmux select-pane -t right
 
 run_binary:
 		$(GOBUILD) -o $(BINARY_NAME)

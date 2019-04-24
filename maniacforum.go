@@ -1,4 +1,3 @@
-//run: tmux send-keys -t right "C-c"; sleep 0.1; tmux send-keys -t right "make run" "C-m"; tmux select-pane -t right
 package main
 
 import (
@@ -88,6 +87,7 @@ func loadMessage() {
 		message.EnrichedContent, message.Links = util.EnrichLinks(message.Content)
 		messagePanel.Rows = strings.Split(util.FormatQuote(message.EnrichedContent), "\n")
 		messagePanel.ScrollTop()
+		board.SetMessageAsRead(message.ID)
 	}
 }
 
@@ -103,12 +103,19 @@ func loadThread() {
 
 	// Clear thread panel
 	threadPanel.Rows = nil
+
 	threadPanel.SelectedRow = 0
 	for _, m := range activeThreads.Messages {
+		messageColor := "red"
+
+		if m.Read {
+			messageColor = "grey"
+		}
+
 		threadPanel.Rows = append(
 			threadPanel.Rows,
 			strings.Repeat("    ", m.Hierarchy-1)+
-				"○ "+m.Topic+" ["+m.Date+" "+m.Author.Name+"](fg:white)")
+				"○ ["+m.Topic+"](fg:"+messageColor+") ["+m.Date+" "+m.Author.Name+"](fg:white)")
 	}
 	message.EnrichedContent, message.Links = util.EnrichLinks(message.Content)
 	messagePanel.Rows = strings.Split(util.FormatQuote(message.EnrichedContent), "\n")

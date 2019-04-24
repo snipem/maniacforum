@@ -1,9 +1,12 @@
 package board
 
 import (
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
+	"os"
+	"os/user"
 	"regexp"
 	"strconv"
 	"strings"
@@ -40,6 +43,7 @@ type Message struct {
 	Links           []string
 	Hierarchy       int
 	Author          User
+	Read            bool
 }
 
 // Board in forum, like Smalltalk, O/T, etc.
@@ -68,6 +72,8 @@ func GetThread(threadID string, boardID string) Thread {
 		m.Hierarchy = s.ParentsFiltered("ul").Length()
 		m.Link, _ = s.Find("a").Attr("href")
 		m.Author.Name = strings.TrimSpace(s.Find("span").Find("span").Text())
+
+		m.Read = isMessageRead(m.ID)
 
 		// Remove sub element from doc that is included in date
 		s.Find("li > span > font > b").Remove()
@@ -112,6 +118,40 @@ func GetMessage(resource string) Message {
 	})
 
 	return m
+}
+
+// SetMessageAsRead sets a message as read
+func SetMessageAsRead(id string) {
+	if isMessageRead(id) {
+		return
+	}
+
+	usr, err := user.Current()
+	// TODO Implement me
+	f, err := os.OpenFile(usr.HomeDir+"/.config/maniacread.log", os.O_APPEND|os.O_WRONLY, 0600)
+	if err != nil {
+		panic(err)
+	}
+
+	defer f.Close()
+
+	if _, err = f.WriteString(id + "\n"); err != nil {
+		panic(err)
+	}
+}
+
+// IsMessageRead checks if a message has been read
+func isMessageRead(id string) bool {
+	// TODO Implement me
+
+	usr, err := user.Current()
+	b, err := ioutil.ReadFile(usr.HomeDir + "/.config/maniacread.log")
+	if err != nil {
+		panic(err)
+	}
+	s := string(b)
+
+	return strings.Contains(s, id)
 }
 
 var BoardURL = "https://www.maniac-forum.de/forum/"
