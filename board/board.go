@@ -1,15 +1,23 @@
 package board
 
 import (
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
+	"os"
+	"os/user"
 	"regexp"
 	"strconv"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
 )
+
+// BoardURL is the base url of the forum
+var BoardURL = "https://www.maniac-forum.de/forum/"
+
+var debug = false
 
 // Forum represents the whole forum
 type Forum struct {
@@ -40,6 +48,7 @@ type Message struct {
 	Links           []string
 	Hierarchy       int
 	Author          User
+	Read            bool
 }
 
 // Board in forum, like Smalltalk, O/T, etc.
@@ -55,7 +64,41 @@ type User struct {
 	ID   int
 }
 
-// GetThread fatches a Thread based on a Thread id
+var logger *log.Logger
+var readLogfile string
+
+func init() {
+	readLogfile = getReadLogFilePath()
+
+	if debug {
+		f, err := os.OpenFile("maniacforum.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			log.Println(err)
+		}
+		// TODO how to safely handle file?
+		// defer f.Close()
+
+		logger = log.New(f, "board.go ", log.LstdFlags)
+	}
+}
+
+// getReadLogFilePath from env var or default .config file path
+func getReadLogFilePath() string {
+	var path string
+	if env, ok := os.LookupEnv("MANIACFORUM_READLOG_FILE"); ok {
+		path = env
+	} else {
+		usr, _ := user.Current()
+		path = usr.HomeDir + "/.config/maniacread.log"
+	}
+
+	// Create file if not existing
+	os.OpenFile(path, os.O_RDONLY|os.O_CREATE, 0666)
+
+	return path
+}
+
+// GetThread fetches a Thread based on a Thread id
 func GetThread(threadID string, boardID string) Thread {
 	resource := "pxmboard.php?mode=thread&brdid=" + boardID + "&thrdid=" + threadID
 	var t Thread
@@ -69,6 +112,11 @@ func GetThread(threadID string, boardID string) Thread {
 		m.Link, _ = s.Find("a").Attr("href")
 		m.Author.Name = strings.TrimSpace(s.Find("span").Find("span").Text())
 
+		name, _ := s.Find("a").Attr("name")
+
+		m.ID = cleanMessageID(name)
+		m.Read = IsMessageRead(m.ID)
+
 		// Remove sub element from doc that is included in date
 		s.Find("li > span > font > b").Remove()
 		foundDate := s.Find("li > span > font").Text()
@@ -78,6 +126,11 @@ func GetThread(threadID string, boardID string) Thread {
 	})
 
 	return t
+}
+
+func cleanMessageID(dirty string) string {
+	// Drop leading P from name
+	return strings.Replace(dirty, "p", "", 1)
 }
 
 // GetMessage fetches a message based on it's resource string
@@ -90,7 +143,7 @@ func GetMessage(resource string) Message {
 	var m Message
 	m.Link = resource
 	values, _ := url.ParseQuery(resource)
-	m.ID = values.Get("msgid")
+	m.ID = cleanMessageID(values.Get("msgid"))
 
 	doc := getDoc(resource)
 
@@ -114,7 +167,41 @@ func GetMessage(resource string) Message {
 	return m
 }
 
-var BoardURL = "https://www.maniac-forum.de/forum/"
+// SetMessageAsRead sets a message as read
+func SetMessageAsRead(id string) {
+
+	if IsMessageRead(id) {
+		return
+	}
+
+	f, err := os.OpenFile(readLogfile, os.O_APPEND|os.O_WRONLY, 0600)
+	if err != nil {
+		panic(err)
+	}
+
+	defer f.Close()
+
+	if _, err = f.WriteString(id + "\n"); err != nil {
+		panic(err)
+	}
+}
+
+// IsMessageRead checks if a message has been read
+func IsMessageRead(id string) bool {
+
+	if strings.Compare(id, "") == 0 {
+		return false
+	}
+
+	b, err := ioutil.ReadFile(readLogfile)
+	if err != nil {
+		panic(err)
+	}
+	s := string(b)
+
+	isRead := strings.Contains(s, id)
+	return isRead
+}
 
 func getDoc(resource string) *goquery.Document {
 	// Request the HTML page.

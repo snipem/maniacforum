@@ -1,4 +1,3 @@
-//run: tmux send-keys -t right "C-c"; sleep 0.1; tmux send-keys -t right "make run" "C-m"; tmux select-pane -t right
 package main
 
 import (
@@ -58,6 +57,7 @@ Globale Steuerung
 
    j  - Nächster Unterthread
    k  - Vorheriger Unterthread
+   u  - Nächster ungelesener Unterthread
    J  - Nächster Thread
    K  - Vorheriger Thread
 
@@ -88,6 +88,23 @@ func loadMessage() {
 		message.EnrichedContent, message.Links = util.EnrichLinks(message.Content)
 		messagePanel.Rows = strings.Split(util.FormatQuote(message.EnrichedContent), "\n")
 		messagePanel.ScrollTop()
+
+		// TODO Copy these two commands into function
+		activeThreads.Messages[threadPanel.SelectedRow].Read = true
+		board.SetMessageAsRead(message.ID)
+	}
+
+	// Render thread for read messages
+	renderThread()
+}
+
+// selectNextUnreadMessage selects the next unread message in the current thread
+func selectNextUnreadMessage() {
+	for i := threadPanel.SelectedRow; i < len(activeThreads.Messages); i++ {
+		if !activeThreads.Messages[i].Read {
+			threadPanel.SelectedRow = i
+			return
+		}
 	}
 }
 
@@ -100,19 +117,33 @@ func answer() {
 func loadThread() {
 	message = board.GetMessage(threads[boardPanel.SelectedRow].Link)
 	activeThreads = board.GetThread(threads[boardPanel.SelectedRow].ID, activeBoard.ID)
+	threadPanel.SelectedRow = 0
+
+	renderThread()
+
+	messagePanel.ScrollTop()
+}
+
+func renderThread() {
+
+	threadPanel.Rows = nil
 
 	// Clear thread panel
-	threadPanel.Rows = nil
-	threadPanel.SelectedRow = 0
 	for _, m := range activeThreads.Messages {
+		messageColor := "red"
+
+		if m.Read {
+			messageColor = "grey"
+		}
+
 		threadPanel.Rows = append(
 			threadPanel.Rows,
 			strings.Repeat("    ", m.Hierarchy-1)+
-				"○ "+m.Topic+" ["+m.Date+" "+m.Author.Name+"](fg:white)")
+				"○ ["+m.Topic+"](fg:"+messageColor+") ["+m.Date+" "+m.Author.Name+"](fg:white)")
 	}
 	message.EnrichedContent, message.Links = util.EnrichLinks(message.Content)
 	messagePanel.Rows = strings.Split(util.FormatQuote(message.EnrichedContent), "\n")
-	messagePanel.ScrollTop()
+
 }
 
 // openLinks opens a link in the displayed message with the default system browser
@@ -291,6 +322,9 @@ func main() {
 			loadMessage()
 		case "k":
 			threadPanel.ScrollUp()
+			loadMessage()
+		case "u":
+			selectNextUnreadMessage()
 			loadMessage()
 		case "<Enter>":
 			loadThread()
