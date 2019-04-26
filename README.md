@@ -27,6 +27,7 @@ Oder alternativ `go get github.com/snipem/maniacforum`.
 
        j  - Nächster Unterthread
        k  - Vorheriger Unterthread
+       u  - Nächster ungelesener Unterthread
        J  - Nächster Thread
        K  - Vorheriger Thread
 
@@ -35,9 +36,14 @@ Oder alternativ `go get github.com/snipem/maniacforum`.
 
 ### Feature Requests
 
+#### Open
+
 * Native posting without browser - deli-
 * Boss key - Stitch
-* Add read / unread status - mat
+
+#### Done
+
+* ✓ Add read / unread status - mat
 
 ### Todo
 
@@ -48,4 +54,3 @@ Oder alternativ `go get github.com/snipem/maniacforum`.
 ### Releasing
 
     make TAG_VERSION=0.0.12 release
-

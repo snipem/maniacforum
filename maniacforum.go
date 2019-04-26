@@ -57,6 +57,7 @@ Globale Steuerung
 
    j  - Nächster Unterthread
    k  - Vorheriger Unterthread
+   u  - Nächster ungelesener Unterthread
    J  - Nächster Thread
    K  - Vorheriger Thread
 
@@ -97,6 +98,16 @@ func loadMessage() {
 	renderThread()
 }
 
+// selectNextUnreadMessage selects the next unread message in the current thread
+func selectNextUnreadMessage() {
+	for i := threadPanel.SelectedRow; i < len(activeThreads.Messages); i++ {
+		if !activeThreads.Messages[i].Read {
+			threadPanel.SelectedRow = i
+			return
+		}
+	}
+}
+
 // answer uses the default system browser to open the answer link of the currently selected message
 func answer() {
 	open.Run(board.BoardURL + "pxmboard.php?mode=messageform&brdid=" + activeBoard.ID + "&msgid=" + message.ID)
@@ -116,7 +127,6 @@ func loadThread() {
 func renderThread() {
 
 	threadPanel.Rows = nil
-	// TODO make this work
 
 	// Clear thread panel
 	for _, m := range activeThreads.Messages {
@@ -312,6 +322,9 @@ func main() {
 			loadMessage()
 		case "k":
 			threadPanel.ScrollUp()
+			loadMessage()
+		case "u":
+			selectNextUnreadMessage()
 			loadMessage()
 		case "<Enter>":
 			loadThread()
