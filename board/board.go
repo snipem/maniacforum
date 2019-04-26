@@ -68,8 +68,8 @@ var logger *log.Logger
 var readLogfile string
 
 func init() {
-	usr, _ := user.Current()
-	readLogfile = usr.HomeDir + "/.config/maniacread.log"
+	readLogfile = getReadLogFilePath()
+
 	if debug {
 		f, err := os.OpenFile("maniacforum.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
@@ -80,6 +80,22 @@ func init() {
 
 		logger = log.New(f, "board.go ", log.LstdFlags)
 	}
+}
+
+// getReadLogFilePath from env var or default .config file path
+func getReadLogFilePath() string {
+	var path string
+	if env, ok := os.LookupEnv("MANIACFORUM_READLOG_FILE"); ok {
+		path = env
+	} else {
+		usr, _ := user.Current()
+		path = usr.HomeDir + "/.config/maniacread.log"
+	}
+
+	// Create file if not existing
+	os.OpenFile(path, os.O_RDONLY|os.O_CREATE, 0666)
+
+	return path
 }
 
 // GetThread fetches a Thread based on a Thread id
