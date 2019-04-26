@@ -89,7 +89,7 @@ func getReadLogFilePath() string {
 		path = env
 	} else {
 		usr, _ := user.Current()
-		path = usr.HomeDir + "/.config/maniacread.log"
+		path = usr.HomeDir + "/.maniacread.log"
 	}
 
 	// Create file if not existing

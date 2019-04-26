@@ -33,7 +33,7 @@ Oder alternativ `go get github.com/snipem/maniacforum`.
 
 ### Gelesen / Ungelesen Status von Beiträgen
 
-`maniacforum` speichert den Lesestatus von Beiträgen standardmäßig unter `$HOME/.config/maniacread.log`. Der Pfad kann mit der Umgebungsvariable `$MANIACFORUM_READLOG_FILE` überschrieben werden. Zum Beispiel für den Sync über Dropbox: `MANIACFORUM_READLOG_FILE="$HOME/dropbox/maniacread.log" maniacforum`.
+`maniacforum` speichert den Lesestatus von Beiträgen standardmäßig unter `$HOME/.maniacread.log`. Der Pfad kann mit der Umgebungsvariable `$MANIACFORUM_READLOG_FILE` überschrieben werden. Zum Beispiel für den Sync über Dropbox: `MANIACFORUM_READLOG_FILE="$HOME/dropbox/maniacread.log" maniacforum`.
 
 ## Development
 
@@ -56,4 +56,6 @@ Oder alternativ `go get github.com/snipem/maniacforum`.
 
 ### Releasing
 
-    make TAG_VERSION=0.0.12 release
+* Make git clean
+* Set version in `maniacforum.go`
+* `make TAG_VERSION=0.0.12 release`
