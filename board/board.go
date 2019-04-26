@@ -158,7 +158,6 @@ func SetMessageAsRead(id string) {
 		return
 	}
 
-	// TODO Implement me
 	f, err := os.OpenFile(readLogfile, os.O_APPEND|os.O_WRONLY, 0600)
 	if err != nil {
 		panic(err)
