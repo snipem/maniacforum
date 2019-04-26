@@ -59,7 +59,20 @@ type User struct {
 	ID   int
 }
 
-// GetThread fatches a Thread based on a Thread id
+var logger *log.Logger
+
+func init() {
+	f, err := os.OpenFile("maniacforum.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Println(err)
+	}
+	// TODO how to safely handle file?
+	// defer f.Close()
+
+	logger = log.New(f, "board.go ", log.LstdFlags)
+}
+
+// GetThread fetches a Thread based on a Thread id
 func GetThread(threadID string, boardID string) Thread {
 	resource := "pxmboard.php?mode=thread&brdid=" + boardID + "&thrdid=" + threadID
 	var t Thread
@@ -73,7 +86,11 @@ func GetThread(threadID string, boardID string) Thread {
 		m.Link, _ = s.Find("a").Attr("href")
 		m.Author.Name = strings.TrimSpace(s.Find("span").Find("span").Text())
 
-		m.Read = isMessageRead(m.ID)
+		name, _ := s.Find("a").Attr("name")
+
+		// Drop leading P from name
+		m.ID = strings.Replace(name, "p", "", 1)
+		m.Read = IsMessageRead(m.ID)
 
 		// Remove sub element from doc that is included in date
 		s.Find("li > span > font > b").Remove()
@@ -97,6 +114,9 @@ func GetMessage(resource string) Message {
 	m.Link = resource
 	values, _ := url.ParseQuery(resource)
 	m.ID = values.Get("msgid")
+	// Drop leading P from name
+	// TODO Duplicated code
+	m.ID = strings.Replace(m.ID, "p", "", 1)
 
 	doc := getDoc(resource)
 
@@ -122,7 +142,9 @@ func GetMessage(resource string) Message {
 
 // SetMessageAsRead sets a message as read
 func SetMessageAsRead(id string) {
-	if isMessageRead(id) {
+
+	logger.Printf("Set %s as read", (id))
+	if IsMessageRead(id) {
 		return
 	}
 
@@ -141,8 +163,12 @@ func SetMessageAsRead(id string) {
 }
 
 // IsMessageRead checks if a message has been read
-func isMessageRead(id string) bool {
-	// TODO Implement me
+func IsMessageRead(id string) bool {
+
+	// log.Println(id)
+	if strings.Compare(id, "") == 0 {
+		return false
+	}
 
 	usr, err := user.Current()
 	b, err := ioutil.ReadFile(usr.HomeDir + "/.config/maniacread.log")
@@ -151,7 +177,9 @@ func isMessageRead(id string) bool {
 	}
 	s := string(b)
 
-	return strings.Contains(s, id)
+	isRead := strings.Contains(s, id)
+	logger.Printf("%s is read %s", id, strconv.FormatBool(isRead))
+	return isRead
 }
 
 var BoardURL = "https://www.maniac-forum.de/forum/"

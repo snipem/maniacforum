@@ -87,8 +87,14 @@ func loadMessage() {
 		message.EnrichedContent, message.Links = util.EnrichLinks(message.Content)
 		messagePanel.Rows = strings.Split(util.FormatQuote(message.EnrichedContent), "\n")
 		messagePanel.ScrollTop()
+
+		// TODO Copy these two commands into function
+		activeThreads.Messages[threadPanel.SelectedRow].Read = true
 		board.SetMessageAsRead(message.ID)
 	}
+
+	// Render thread for read messages
+	renderThread()
 }
 
 // answer uses the default system browser to open the answer link of the currently selected message
@@ -100,11 +106,19 @@ func answer() {
 func loadThread() {
 	message = board.GetMessage(threads[boardPanel.SelectedRow].Link)
 	activeThreads = board.GetThread(threads[boardPanel.SelectedRow].ID, activeBoard.ID)
+	threadPanel.SelectedRow = 0
+
+	renderThread()
+
+	messagePanel.ScrollTop()
+}
+
+func renderThread() {
+
+	threadPanel.Rows = nil
+	// TODO make this work
 
 	// Clear thread panel
-	threadPanel.Rows = nil
-
-	threadPanel.SelectedRow = 0
 	for _, m := range activeThreads.Messages {
 		messageColor := "red"
 
@@ -119,7 +133,7 @@ func loadThread() {
 	}
 	message.EnrichedContent, message.Links = util.EnrichLinks(message.Content)
 	messagePanel.Rows = strings.Split(util.FormatQuote(message.EnrichedContent), "\n")
-	messagePanel.ScrollTop()
+
 }
 
 // openLinks opens a link in the displayed message with the default system browser

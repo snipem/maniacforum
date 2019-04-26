@@ -22,7 +22,8 @@ clean:
 		rm -f $(BINARY_UNIX)
 
 run:
-		$(GOCMD) run maniacforum.go
+		go build .
+		./maniacforum
 	
 ui:
 		tmux send-keys -t right "C-c"; sleep 0.1; tmux send-keys -t right "cd ${GOPATH}/src/github.com/snipem/maniacforum && make run" "C-m"; tmux select-pane -t right
