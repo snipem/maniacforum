@@ -14,6 +14,11 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
+// BoardURL is the base url of the forum
+var BoardURL = "https://www.maniac-forum.de/forum/"
+
+var debug = false
+
 // Forum represents the whole forum
 type Forum struct {
 	Boards []Board
@@ -60,16 +65,21 @@ type User struct {
 }
 
 var logger *log.Logger
+var readLogfile string
 
 func init() {
-	f, err := os.OpenFile("maniacforum.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		log.Println(err)
-	}
-	// TODO how to safely handle file?
-	// defer f.Close()
+	usr, _ := user.Current()
+	readLogfile = usr.HomeDir + "/.config/maniacread.log"
+	if debug {
+		f, err := os.OpenFile("maniacforum.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			log.Println(err)
+		}
+		// TODO how to safely handle file?
+		// defer f.Close()
 
-	logger = log.New(f, "board.go ", log.LstdFlags)
+		logger = log.New(f, "board.go ", log.LstdFlags)
+	}
 }
 
 // GetThread fetches a Thread based on a Thread id
@@ -88,8 +98,7 @@ func GetThread(threadID string, boardID string) Thread {
 
 		name, _ := s.Find("a").Attr("name")
 
-		// Drop leading P from name
-		m.ID = strings.Replace(name, "p", "", 1)
+		m.ID = cleanMessageID(name)
 		m.Read = IsMessageRead(m.ID)
 
 		// Remove sub element from doc that is included in date
@@ -103,6 +112,11 @@ func GetThread(threadID string, boardID string) Thread {
 	return t
 }
 
+func cleanMessageID(dirty string) string {
+	// Drop leading P from name
+	return strings.Replace(dirty, "p", "", 1)
+}
+
 // GetMessage fetches a message based on it's resource string
 func GetMessage(resource string) Message {
 
@@ -113,10 +127,7 @@ func GetMessage(resource string) Message {
 	var m Message
 	m.Link = resource
 	values, _ := url.ParseQuery(resource)
-	m.ID = values.Get("msgid")
-	// Drop leading P from name
-	// TODO Duplicated code
-	m.ID = strings.Replace(m.ID, "p", "", 1)
+	m.ID = cleanMessageID(values.Get("msgid"))
 
 	doc := getDoc(resource)
 
@@ -143,14 +154,12 @@ func GetMessage(resource string) Message {
 // SetMessageAsRead sets a message as read
 func SetMessageAsRead(id string) {
 
-	logger.Printf("Set %s as read", (id))
 	if IsMessageRead(id) {
 		return
 	}
 
-	usr, err := user.Current()
 	// TODO Implement me
-	f, err := os.OpenFile(usr.HomeDir+"/.config/maniacread.log", os.O_APPEND|os.O_WRONLY, 0600)
+	f, err := os.OpenFile(readLogfile, os.O_APPEND|os.O_WRONLY, 0600)
 	if err != nil {
 		panic(err)
 	}
@@ -165,24 +174,19 @@ func SetMessageAsRead(id string) {
 // IsMessageRead checks if a message has been read
 func IsMessageRead(id string) bool {
 
-	// log.Println(id)
 	if strings.Compare(id, "") == 0 {
 		return false
 	}
 
-	usr, err := user.Current()
-	b, err := ioutil.ReadFile(usr.HomeDir + "/.config/maniacread.log")
+	b, err := ioutil.ReadFile(readLogfile)
 	if err != nil {
 		panic(err)
 	}
 	s := string(b)
 
 	isRead := strings.Contains(s, id)
-	logger.Printf("%s is read %s", id, strconv.FormatBool(isRead))
 	return isRead
 }
-
-var BoardURL = "https://www.maniac-forum.de/forum/"
 
 func getDoc(resource string) *goquery.Document {
 	// Request the HTML page.
