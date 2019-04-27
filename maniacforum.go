@@ -34,7 +34,7 @@ var message board.Message
 var activePane int
 var maxPane = 3
 
-var version = "1.1.1"
+var version = "1.1.2"
 
 var helpPage = `maniacforum ` + version + `
 
@@ -100,7 +100,7 @@ func loadMessage() {
 
 // selectNextUnreadMessage selects the next unread message in the current thread
 func selectNextUnreadMessage() {
-	for i := threadPanel.SelectedRow; i < len(activeThreads.Messages); i++ {
+	for i := threadPanel.SelectedRow + 1; i < len(activeThreads.Messages); i++ {
 		if !activeThreads.Messages[i].Read {
 			threadPanel.SelectedRow = i
 			return
