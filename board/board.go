@@ -17,7 +17,7 @@ import (
 // BoardURL is the base url of the forum
 var BoardURL = "https://www.maniac-forum.de/forum/"
 
-var debug = false
+var debug = true
 
 // Forum represents the whole forum
 type Forum struct {
@@ -68,7 +68,13 @@ type User struct {
 var Logger *log.Logger
 var readLogfile string
 
+var cache map[string]Message
+
 func init() {
+	// init cache
+	// MAYBE clear cache sometimes
+	cache = make(map[string]Message)
+
 	readLogfile = getReadLogFilePath()
 
 	f, err := os.OpenFile("maniacforum.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
@@ -136,8 +142,32 @@ func cleanMessageID(dirty string) string {
 	return strings.Replace(dirty, "p", "", 1)
 }
 
-// GetMessage fetches a message based on it's resource string
-func GetMessage(resource string) Message {
+// GetMessage fetches messages based on their resource string from cache or directly
+func GetMessage(resources ...string) Message {
+	firstResource := resources[0]
+
+	// run caching for all resources
+	for _, resource := range resources {
+		if _, ok := cache[resource]; !ok {
+			// not already in cache
+			go getMessage(resource)
+		}
+	}
+
+	// handle the return message
+	if val, ok := cache[firstResource]; ok {
+		// TODO does this return the actual value?
+		Logger.Printf("Fetching %s from cache", firstResource)
+		return val
+	} else {
+		return getMessage(firstResource)
+	}
+
+}
+
+// getMessage fetches a message based on it's resource string
+func getMessage(resource string) Message {
+	Logger.Printf("Fetching %s", resource)
 
 	if resource == "" {
 		log.Fatalf("Resource id is empty")
@@ -167,6 +197,8 @@ func GetMessage(resource string) Message {
 		m.Author.ID, _ = strconv.Atoi(out)
 	})
 
+	// write to cache
+	cache[resource] = m
 	return m
 }
 
