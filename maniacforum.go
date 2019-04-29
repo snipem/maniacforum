@@ -142,7 +142,8 @@ func renderThread() {
 				"○ ["+m.Topic+"](fg:"+messageColor+") ["+m.Date+" "+m.Author.Name+"](fg:white)")
 	}
 	message.EnrichedContent, message.Links = util.EnrichLinks(message.Content)
-	messagePanel.Rows = strings.Split(util.FormatQuote(message.EnrichedContent), "\n")
+	// TODO Workaround for termui not rendering the first line starting with a quote in red. Add a leading line
+	messagePanel.Rows = strings.Split("\n"+util.FormatQuote(message.EnrichedContent), "\n")
 
 }
 
