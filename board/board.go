@@ -64,21 +64,24 @@ type User struct {
 	ID   int
 }
 
-var logger *log.Logger
+// Logger is a logger for the board
+var Logger *log.Logger
 var readLogfile string
 
 func init() {
 	readLogfile = getReadLogFilePath()
 
-	if debug {
-		f, err := os.OpenFile("maniacforum.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-		if err != nil {
-			log.Println(err)
-		}
-		// TODO how to safely handle file?
-		// defer f.Close()
+	f, err := os.OpenFile("maniacforum.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Println(err)
+	}
+	// TODO how to safely handle file?
+	// defer f.Close()
 
-		logger = log.New(f, "board.go ", log.LstdFlags)
+	Logger = log.New(f, "board.go ", log.LstdFlags)
+
+	if !debug {
+		Logger.SetOutput(ioutil.Discard)
 	}
 }
 

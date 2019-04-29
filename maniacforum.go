@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"time"
 
 	"strings"
 
@@ -85,10 +86,12 @@ func loadBoard() {
 
 func loadMessage() {
 	if len(activeThreads.Messages) > 0 {
+		start := time.Now()
 		message = board.GetMessage(activeThreads.Messages[threadPanel.SelectedRow].Link)
 		message.EnrichedContent, message.Links = util.EnrichLinks(message.Content)
 		messagePanel.Rows = strings.Split(util.FormatQuote(message.EnrichedContent), "\n")
 		messagePanel.ScrollTop()
+		board.Logger.Printf("loading message took %ss", time.Since(start))
 
 		// TODO Copy these two commands into function
 		activeThreads.Messages[threadPanel.SelectedRow].Read = true
