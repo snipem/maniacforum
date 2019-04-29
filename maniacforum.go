@@ -119,7 +119,7 @@ func answer() {
 
 // loadThread loads selected thread from board and displays the first message
 func loadThread() {
-	message = board.GetMessage(threads[boardPanel.SelectedRow].Link)
+	loadMessage()
 	activeThreads = board.GetThread(threads[boardPanel.SelectedRow].ID, activeBoard.ID)
 	threadPanel.SelectedRow = 0
 
