@@ -17,7 +17,7 @@ import (
 // BoardURL is the base url of the forum
 var BoardURL = "https://www.maniac-forum.de/forum/"
 
-var debug = true
+var debug = false
 
 // Forum represents the whole forum
 type Forum struct {
