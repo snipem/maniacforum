@@ -58,6 +58,7 @@ Globale Steuerung
    j  - Nächster Unterthread
    k  - Vorheriger Unterthread
    u  - Nächster ungelesener Unterthread
+   z  - Nächster Thread
    J  - Nächster Thread
    K  - Vorheriger Thread
 
@@ -312,7 +313,7 @@ func main() {
 			case 3:
 				messagePanel.ScrollPageUp()
 			}
-		case "J":
+		case "J", "z":
 			boardPanel.ScrollDown()
 			loadThread()
 		case "K":

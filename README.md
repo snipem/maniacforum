@@ -28,6 +28,7 @@ Oder alternativ `go get github.com/snipem/maniacforum`.
        j  - Nächster Unterthread
        k  - Vorheriger Unterthread
        u  - Nächster ungelesener Unterthread
+       z  - Nächster Thread
        J  - Nächster Thread
        K  - Vorheriger Thread
 
