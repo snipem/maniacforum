@@ -143,13 +143,16 @@ func cleanMessageID(dirty string) string {
 }
 
 // GetMessage fetches messages based on their resource string from cache or directly
-func GetMessage(resources ...string) Message {
+func GetMessage(resources []string) Message {
 	firstResource := resources[0]
 
 	// run caching for all resources
-	for _, resource := range resources {
+	for i, resource := range resources {
 		if _, ok := cache[resource]; !ok {
 			// not already in cache
+			if i > 0 {
+				Logger.Printf("Fetching %s ahead", resource)
+			}
 			go getMessage(resource)
 		}
 	}

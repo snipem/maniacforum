@@ -35,7 +35,7 @@ var message board.Message
 var activePane int
 var maxPane = 3
 
-var version = "1.1.2"
+var version = "1.2"
 
 var helpPage = `maniacforum ` + version + `
 
@@ -84,10 +84,20 @@ func loadBoard() {
 	}
 }
 
+func getMessagesToLoad() []string {
+	if threadPanel.SelectedRow < len(activeThreads.Messages)-1 {
+		return []string{
+			// TODO maybe fetch more ahead
+			activeThreads.Messages[threadPanel.SelectedRow].Link,
+			activeThreads.Messages[threadPanel.SelectedRow+1].Link}
+	}
+	return []string{activeThreads.Messages[threadPanel.SelectedRow].Link}
+}
+
 func loadMessage() {
 	if len(activeThreads.Messages) > 0 {
 		start := time.Now()
-		message = board.GetMessage(activeThreads.Messages[threadPanel.SelectedRow].Link)
+		message = board.GetMessage(getMessagesToLoad())
 		message.EnrichedContent, message.Links = util.EnrichLinks(message.Content)
 		messagePanel.Rows = strings.Split(util.FormatQuote(message.EnrichedContent), "\n")
 		messagePanel.ScrollTop()

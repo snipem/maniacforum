@@ -1,9 +1,10 @@
 package board
 
 import (
-	"github.com/stretchr/testify/assert"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestForum(t *testing.T) {
@@ -39,7 +40,7 @@ func TestThread(t *testing.T) {
 }
 
 func TestMessage(t *testing.T) {
-	message := GetMessage("pxmboard.php?mode=message&brdid=1&msgid=4377586")
+	message := GetMessage([]string{"pxmboard.php?mode=message&brdid=1&msgid=4377586"})
 	t.Log("Message: ", message.Content)
 	t.Log("Link: ", message.Link)
 	expected := "Trophy-Sharing bedeutet nicht zwingend Cross-Buy"
