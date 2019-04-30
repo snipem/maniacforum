@@ -10,14 +10,13 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 )
 
 // BoardURL is the base url of the forum
 var BoardURL = "https://www.maniac-forum.de/forum/"
-
-var debug = false
 
 // Forum represents the whole forum
 type Forum struct {
@@ -86,7 +85,7 @@ func init() {
 
 	Logger = log.New(f, "board.go ", log.LstdFlags)
 
-	if !debug {
+	if _, isSet := os.LookupEnv("MANIACFORUM_DEBUG"); !isSet {
 		Logger.SetOutput(ioutil.Discard)
 	}
 }
@@ -94,7 +93,7 @@ func init() {
 // getReadLogFilePath from env var or default .config file path
 func getReadLogFilePath() string {
 	var path string
-	if env, ok := os.LookupEnv("MANIACFORUM_READLOG_FILE"); ok {
+	if env, isSet := os.LookupEnv("MANIACFORUM_READLOG_FILE"); isSet {
 		path = env
 	} else {
 		usr, _ := user.Current()
@@ -243,7 +242,9 @@ func IsMessageRead(id string) bool {
 
 func getDoc(resource string) *goquery.Document {
 	// Request the HTML page.
+	start := time.Now()
 	res, err := http.Get(BoardURL + resource)
+	Logger.Printf("Loading resource %s took %s", resource, time.Since(start))
 	if err != nil {
 		log.Fatal(err)
 	}

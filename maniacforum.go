@@ -101,7 +101,7 @@ func loadMessage() {
 		message.EnrichedContent, message.Links = util.EnrichLinks(message.Content)
 		messagePanel.Rows = strings.Split(util.FormatQuote(message.EnrichedContent), "\n")
 		messagePanel.ScrollTop()
-		board.Logger.Printf("loading message took %ss", time.Since(start))
+		board.Logger.Printf("loading message took %s", time.Since(start))
 
 		// TODO Copy these two commands into function
 		activeThreads.Messages[threadPanel.SelectedRow].Read = true
@@ -275,6 +275,8 @@ func main() {
 	uiEvents := ui.PollEvents()
 	for {
 		e := <-uiEvents
+		start := time.Now()
+		board.Logger.Printf("======== KEY PRESS '%s' =========", e.ID)
 		switch e.ID {
 		case "<Tab>":
 			if activePane < maxPane {
@@ -369,6 +371,7 @@ func main() {
 
 		renderTab()
 		ui.Render(boardPanel, messagePanel, threadPanel, tabpane)
+		board.Logger.Printf("UI interaction freezed for %s", time.Since(start))
 
 	}
 }
