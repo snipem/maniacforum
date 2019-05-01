@@ -371,7 +371,7 @@ func main() {
 
 		renderTab()
 		ui.Render(boardPanel, messagePanel, threadPanel, tabpane)
-		board.Logger.Printf("UI interaction freezed for %s", time.Since(start))
+		board.Logger.Printf("UI interaction for %s freezed for %s", e.ID, time.Since(start))
 
 	}
 }
