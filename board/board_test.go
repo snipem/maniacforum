@@ -35,7 +35,7 @@ func TestThread(t *testing.T) {
 	if len(thread.Messages) == 0 {
 		t.Errorf("No messages returned")
 	}
-	t.Log(thread.Messages)
+	t.Logf("Got %d messages", len(thread.Messages))
 	assert.Equal(t, "21.02.19 23:16", thread.Messages[0].Date)
 }
 
