@@ -16,7 +16,7 @@ all: test build install
 build:
 		$(GOBUILD) -o $(BINARY_NAME) -v
 test:
-		$(GOTEST) -v ./...
+		MANIACFORUM_DEBUG=true $(GOTEST) -v ./...
 clean:
 		$(GOCLEAN)
 		rm -f $(BINARY_NAME)
