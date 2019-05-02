@@ -155,15 +155,17 @@ func GetMessage(resources []string) Message {
 			go getMessage(resource)
 		}
 	}
+	var message Message
 
 	// handle the return message
-	if val, ok := cache[firstResource]; ok {
+	if cachedMessage, ok := cache[firstResource]; ok {
 		// TODO does this return the actual value?
-		Logger.Printf("Fetching %s from cache", firstResource)
-		return val
+		message = cachedMessage
 	} else {
-		return getMessage(firstResource)
+		message = getMessage(firstResource)
 	}
+	Logger.Printf("Returning %s and title %s by %s", message.ID, message.Topic, message.Author.Name)
+	return message
 
 }
 
