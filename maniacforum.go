@@ -99,7 +99,9 @@ func loadMessage() {
 		start := time.Now()
 		message = board.GetMessage(getMessagesToLoad())
 		message.EnrichedContent, message.Links = util.EnrichLinks(message.Content)
-		messagePanel.Rows = strings.Split(util.FormatQuote(message.EnrichedContent), "\n")
+
+		messagePanel.Rows = strings.Split("\n"+util.FormatQuote(message.EnrichedContent), "\n")
+
 		messagePanel.ScrollTop()
 		board.Logger.Printf("loading message took %s", time.Since(start))
 
@@ -129,10 +131,10 @@ func answer() {
 
 // loadThread loads selected thread from board and displays the first message
 func loadThread() {
-	loadMessage()
 	activeThreads = board.GetThread(threads[boardPanel.SelectedRow].ID, activeBoard.ID)
 	threadPanel.SelectedRow = 0
 
+	loadMessage()
 	renderThread()
 
 	messagePanel.ScrollTop()
@@ -155,9 +157,6 @@ func renderThread() {
 			strings.Repeat("    ", m.Hierarchy-1)+
 				"○ ["+m.Topic+"](fg:"+messageColor+") ["+m.Date+" "+m.Author.Name+"](fg:white)")
 	}
-	message.EnrichedContent, message.Links = util.EnrichLinks(message.Content)
-	// TODO Workaround for termui not rendering the first line starting with a quote in red. Add a leading line
-	messagePanel.Rows = strings.Split("\n"+util.FormatQuote(message.EnrichedContent), "\n")
 
 }
 
