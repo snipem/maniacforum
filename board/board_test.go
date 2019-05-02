@@ -40,7 +40,7 @@ func TestThread(t *testing.T) {
 }
 
 func TestMessage(t *testing.T) {
-	message := GetMessage([]string{"pxmboard.php?mode=message&brdid=1&msgid=4377586"})
+	message := GetMessage([]string{"pxmboard.php?mode=message&brdid=1&msgid=4377586", "pxmboard.php?mode=message&brdid=1&msgid=4377585"})
 	t.Log("Message: ", message.Content)
 	t.Log("Link: ", message.Link)
 	expected := "Trophy-Sharing bedeutet nicht zwingend Cross-Buy"
