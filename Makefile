@@ -1,5 +1,6 @@
 # maniacforum parameters
 BINARY_NAME=maniacforum
+.PHONY: all test clean
 
 # Go parameters
 GOCMD=go
