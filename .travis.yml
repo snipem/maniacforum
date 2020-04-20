@@ -6,4 +6,4 @@ before_install:
   - go get github.com/kami-zh/go-capturer
   - env GO111MODULE=on make deps
 script:
-  - $GOPATH/bin/goveralls -service=travis-ci
+  - env GO111MODULE=on $GOPATH/bin/goveralls -service=travis-ci
