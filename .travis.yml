@@ -4,6 +4,6 @@ before_install:
   - go get github.com/mattn/goveralls
   - go get bou.ke/monkey
   - go get github.com/kami-zh/go-capturer
-  - make deps
+  - env GO111MODULE=on make deps
 script:
-  - env GO111MODULE=on $GOPATH/bin/goveralls -service=travis-ci
+  - $GOPATH/bin/goveralls -service=travis-ci
