@@ -13,8 +13,8 @@ import (
 	"github.com/snipem/maniacforum/board"
 	"github.com/snipem/maniacforum/util"
 
-	ui "github.com/gizak/termui"
-	"github.com/gizak/termui/widgets"
+	ui "github.com/gizak/termui/v3"
+	"github.com/gizak/termui/v3/widgets"
 )
 
 // Forum > Board > Threads > Message
