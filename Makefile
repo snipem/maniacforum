@@ -1,3 +1,5 @@
+.PHONY: test
+
 # maniacforum parameters
 BINARY_NAME=maniacforum
 
@@ -15,7 +17,7 @@ all: test build install
 build:
 		$(GOBUILD) -o $(BINARY_NAME) -v
 test:
-		$(GOTEST) -v ./...
+		$(GOTEST) ./...
 clean:
 		$(GOCLEAN)
 		rm -f $(BINARY_NAME)
@@ -38,3 +40,6 @@ deps:
 release:
 		git tag $(TAG_VERSION)
 		goreleaser release --rm-dist
+
+lint:
+		golangci-lint run
