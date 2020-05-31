@@ -114,7 +114,8 @@ func selectNextUnreadMessage() {
 
 // answer uses the default system browser to open the answer link of the currently selected message
 func answer() {
-	open.Run(board.BoardURL + "pxmboard.php?mode=messageform&brdid=" + activeBoard.ID + "&msgid=" + message.ID)
+	err := open.Run(board.BoardURL + "pxmboard.php?mode=messageform&brdid=" + activeBoard.ID + "&msgid=" + message.ID)
+	log.Fatal(err)
 }
 
 // loadThread loads selected thread from board and displays the first message
@@ -156,7 +157,10 @@ func openLink(nr int) {
 	link := message.Links[nr-1]
 	cleanedLink := strings.Replace(link, "[", "", 1)
 	cleanedLink = strings.Replace(cleanedLink, "]", "", 1)
-	open.Run(cleanedLink)
+	err := open.Run(cleanedLink)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func loadForum() {
@@ -210,7 +214,7 @@ func colorize() {
 func main() {
 
 	if len(os.Args) > 1 {
-		fmt.Printf(helpPage)
+		fmt.Print(helpPage)
 		os.Exit(0)
 	}
 

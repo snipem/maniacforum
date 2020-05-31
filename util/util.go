@@ -10,7 +10,7 @@ import (
 func EnrichLinks(content string) (string, []string) {
 	var enrichedContent = content
 	var links []string
-	r := regexp.MustCompile("\\[.*\\]")
+	r := regexp.MustCompile(`\[.*\]`)
 	links = r.FindAllString(content, -1)
 
 	for i := 0; i < len(links); i++ {

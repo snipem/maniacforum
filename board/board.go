@@ -96,7 +96,10 @@ func getReadLogFilePath() string {
 	}
 
 	// Create file if not existing
-	os.OpenFile(path, os.O_RDONLY|os.O_CREATE, 0666)
+	_, err := os.OpenFile(path, os.O_RDONLY|os.O_CREATE, 0666)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	return path
 }
