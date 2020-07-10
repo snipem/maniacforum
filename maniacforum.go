@@ -1,5 +1,7 @@
 package main
 
+// run: make run
+
 import (
 	"fmt"
 	"log"
@@ -210,8 +212,16 @@ func colorize() {
 	}
 
 }
-
 func main() {
+	for {
+		exit := run()
+		if exit {
+			break
+		}
+	}
+}
+
+func run() bool {
 
 	if len(os.Args) > 1 {
 		fmt.Print(helpPage)
@@ -283,7 +293,7 @@ func main() {
 		case "a":
 			answer()
 		case "q", "<C-c>":
-			return
+			return true
 		case "?":
 			messagePanel.Rows = strings.Split(util.FormatQuote(helpPage), "\n")
 		case "b":
@@ -353,6 +363,8 @@ func main() {
 			boardPanel.ScrollTop()
 		case "G", "<End>":
 			boardPanel.ScrollBottom()
+		case "<Resize>":
+			return false
 		}
 
 		if previousKey == "g" {
