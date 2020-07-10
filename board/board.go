@@ -4,12 +4,13 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"net/url"
 	"os"
 	"os/user"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"net/url"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -231,35 +232,32 @@ func getDoc(resource string) *goquery.Document {
 
 // GetForum retuns the whole forum
 func GetForum() Forum {
-	// TODO Scrape this
-	return Forum{
-		[]Board{
-			{
-				ID:    "1",
-				Title: "Smalltalk",
-			},
-			{
-				ID:    "2",
-				Title: "For Sale",
-			},
-			{
-				ID:    "4",
-				Title: "Tech'n'Cheats",
-			},
-			{
-				ID:    "6",
-				Title: "OT",
-			},
-			{
-				ID:    "26",
-				Title: "Filme & Serien",
-			},
-			{
-				ID:    "8",
-				Title: "Online Gaming",
-			},
-		},
-	}
+
+	mainPage := getDoc("pxmboard.php")
+	var boards []Board
+
+	mainPage.Find("#norm > a").Each(func(index int, item *goquery.Selection) {
+		href, _ := item.Attr("href")
+
+		hrefURL, err := url.Parse(href)
+		if err != nil {
+			return
+		}
+
+		boardID := hrefURL.Query().Get("brdid")
+
+		if boardID != "" {
+
+			boards = append(boards, Board{
+				Title: item.Text(),
+				ID:    boardID,
+			})
+
+		}
+	})
+
+	return Forum{boards}
+
 }
 
 func GetBoard(boardID string) Board {

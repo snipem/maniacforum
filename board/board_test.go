@@ -1,9 +1,10 @@
 package board
 
 import (
-	"github.com/stretchr/testify/assert"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestForum(t *testing.T) {
@@ -14,7 +15,7 @@ func TestForum(t *testing.T) {
 	assert.Equal(t, "4", maniacforum.Boards[2].ID)
 	assert.Equal(t, "6", maniacforum.Boards[3].ID)
 	assert.Equal(t, "26", maniacforum.Boards[4].ID)
-	assert.Equal(t, "8", maniacforum.Boards[5].ID)
+	// Boards after this might change due to events like E3 or WM
 }
 
 func TestBoard(t *testing.T) {
