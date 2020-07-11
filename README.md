@@ -58,5 +58,4 @@ Oder alternativ `go get github.com/snipem/maniacforum`.
 ### Releasing
 
 * Make git clean
-* Set version in `maniacforum.go`
 * `make TAG_VERSION=0.0.12 release`
