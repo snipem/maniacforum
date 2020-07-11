@@ -6,6 +6,8 @@ builds:
     - linux
     - darwin
     - windows
+  ldflags:
+    - -s -w -X main.build={{.Version}}
 archives:
   - replacements:
       darwin: Darwin
@@ -13,6 +15,10 @@ archives:
       windows: Windows
       386: i386
       amd64: x86_64
+    format: zip
+    format_overrides:
+      - goos: linux
+        format: tar.gz
 env_files:
   github_token: secrets.env
 checksum:

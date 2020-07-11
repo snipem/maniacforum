@@ -37,7 +37,7 @@ var message board.Message
 var activePane int
 var maxPane = 3
 
-var version = "1.3"
+var version = "dev"
 
 var helpPage = `maniacforum ` + version + `
 
