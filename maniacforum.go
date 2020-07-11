@@ -212,16 +212,12 @@ func colorize() {
 	}
 
 }
+
 func main() {
-	for {
-		exit := run()
-		if exit {
-			break
-		}
-	}
+	run()
 }
 
-func run() bool {
+func run() {
 
 	if len(os.Args) > 1 {
 		fmt.Print(helpPage)
@@ -293,7 +289,7 @@ func run() bool {
 		case "a":
 			answer()
 		case "q", "<C-c>":
-			return true
+			return
 		case "?":
 			messagePanel.Rows = strings.Split(util.FormatQuote(helpPage), "\n")
 		case "b":
@@ -364,7 +360,9 @@ func run() bool {
 		case "G", "<End>":
 			boardPanel.ScrollBottom()
 		case "<Resize>":
-			return false
+			termWidth, termHeight := ui.TerminalDimensions()
+			grid.SetRect(0, 0, termWidth, termHeight)
+			ui.Clear()
 		}
 
 		if previousKey == "g" {
