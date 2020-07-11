@@ -48,12 +48,12 @@ Oder alternativ `go get github.com/snipem/maniacforum`.
 #### Done
 
 * ✓ Add read / unread status - mat
+* ✓ Scrape tabs
+* ✓ Add dynamic resizing
 
 ### Todo
 
-* Actually scrape tabs
 * Add scrolling message dialogue
-* Add dynamic resizing
 
 ### Releasing
 
