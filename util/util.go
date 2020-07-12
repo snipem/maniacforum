@@ -14,7 +14,10 @@ func EnrichLinks(content string) (string, []string) {
 	links = r.FindAllString(content, -1)
 
 	for i := 0; i < len(links); i++ {
-		enrichedContent = strings.Replace(enrichedContent, links[i], "["+strconv.Itoa(i+1)+"]"+links[i], 1)
+		// TODO make prettier
+		cleanLink := strings.ReplaceAll(links[i], "[", "")
+		cleanLink = strings.ReplaceAll(cleanLink, "]", "")
+		enrichedContent = strings.Replace(enrichedContent, links[i], "["+strconv.Itoa(i+1)+"]"+cleanLink, 1)
 	}
 
 	return enrichedContent, links
