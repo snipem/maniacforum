@@ -25,8 +25,14 @@ func TestBoard(t *testing.T) {
 	// TODO Flaky, because it sticks to the sticky note
 	// TODO Extract number of responses from Date
 	assert.Contains(t, threads[0].Date, "02.12.17 10:32")
+	// Expect first entry to be sticky
+	assert.True(t, threads[0].IsSticky)
+
 	assert.Equal(t, "1", forum.ID)
 	assert.Equal(t, "Smalltalk", forum.Title)
+
+	// Expect tenth entry to be not sticky
+	assert.False(t, threads[9].IsSticky)
 
 }
 

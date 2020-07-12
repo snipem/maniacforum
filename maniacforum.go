@@ -82,7 +82,13 @@ func loadBoard() {
 	threadPanel.SelectedRow = 0
 
 	for _, thread := range threads {
-		boardPanel.Rows = append(boardPanel.Rows, thread.Title+" ["+thread.Date+"](fg:white)")
+
+		threadPrefix := ""
+		if thread.IsSticky {
+			threadPrefix = "⋌ "
+		}
+
+		boardPanel.Rows = append(boardPanel.Rows, threadPrefix+thread.Title+" ["+thread.Date+"](fg:white)")
 	}
 }
 

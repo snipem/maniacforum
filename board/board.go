@@ -33,6 +33,7 @@ type Thread struct {
 	Author         string
 	Date           string
 	Answers        int
+	IsSticky       bool
 	LastAnswerDate string
 	LastAnswerLink string
 	Messages       []Message
@@ -271,9 +272,7 @@ func GetBoard(boardID string) Board {
 	board.Title = "Smalltalk"
 	board.ID = boardID
 
-	// Find the review items
 	doc.Find("#threadlist > a").Each(func(i int, s *goquery.Selection) {
-		// For each item found, get the band and title
 		var t Thread
 		t.Title = s.Find("font").Text()
 		t.Link, _ = s.Attr("href")
@@ -282,7 +281,6 @@ func GetBoard(boardID string) Board {
 
 		id = strings.Replace(id, "ld(", "", 1)
 		t.ID = strings.Replace(id, ",0)", "", 1)
-		// t.BoardId = "TODO"
 
 		board.Threads = append(board.Threads, t)
 	})
@@ -298,6 +296,21 @@ func GetBoard(boardID string) Board {
 		foundDate := s.Text()
 		foundDate = strings.Replace(foundDate, "\n", " ", -1)
 		t.Date = strings.Replace(foundDate, " am ", "", 1)
+
+		board.Threads[i] = t
+	})
+
+	doc.Find("#threadlist > img").Each(func(i int, s *goquery.Selection) {
+
+		var t = board.Threads[i]
+
+		imageSrc, _ := s.Attr("src")
+
+		if strings.Contains(imageSrc, "fixed.gif") {
+			t.IsSticky = true
+		} else {
+			t.IsSticky = false
+		}
 
 		board.Threads[i] = t
 	})
