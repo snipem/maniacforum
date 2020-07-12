@@ -56,6 +56,7 @@ Zum Beispiel für den Sync über Dropbox: `MANIACFORUM_READLOG_FILE="$HOME/dropb
 ### Todo
 
 * Add scrolling message dialogue
+* Add Go routines
 
 ### Releasing
 
