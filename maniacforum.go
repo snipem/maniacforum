@@ -155,14 +155,19 @@ func renderThread() {
 }
 
 // openLinks opens a link in the displayed message with the default system browser
-func openLink(nr int) {
+func openLink(nr int) error {
+	if nr > len(message.Links) {
+		return fmt.Errorf("No link with number %d in message", nr)
+	}
 	link := message.Links[nr-1]
 	cleanedLink := strings.Replace(link, "[", "", 1)
 	cleanedLink = strings.Replace(cleanedLink, "]", "", 1)
 	err := open.Run(cleanedLink)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+
+	return nil
 }
 
 func loadForum() {
