@@ -1,8 +1,9 @@
 package util
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestEnrichLinks(t *testing.T) {
@@ -21,9 +22,9 @@ nox
 	assert.Equal(t, "[https://zwei.de]", links[1])
 	assert.Equal(t, "[http://drei.de]", links[2])
 
-	assert.Contains(t, enrichedMessage, "[1][http://eins.de] testset")
-	assert.Contains(t, enrichedMessage, "[2][https://zwei.de] weiterer text")
-	assert.Contains(t, enrichedMessage, "[3][http://drei.de]")
+	assert.Contains(t, enrichedMessage, "[1]http://eins.de testset")
+	assert.Contains(t, enrichedMessage, "[2]https://zwei.de weiterer text")
+	assert.Contains(t, enrichedMessage, "[3]http://drei.de")
 
 }
 
