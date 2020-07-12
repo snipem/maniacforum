@@ -315,7 +315,8 @@ func run() {
 			ui.Clear()
 			renderTab()
 			initialize()
-		case "<Down>":
+		// TODO Not working
+		case "<MouseWheelDown>", "<Down>":
 			switch activePane {
 			case 1:
 				boardPanel.ScrollDown()
@@ -326,7 +327,7 @@ func run() {
 			case 3:
 				messagePanel.ScrollPageDown()
 			}
-		case "<Up>":
+		case "<MouseWheelUp>", "<Up>":
 			switch activePane {
 			case 1:
 				boardPanel.ScrollUp()
@@ -374,6 +375,22 @@ func run() {
 			termWidth, termHeight := ui.TerminalDimensions()
 			grid.SetRect(0, 0, termWidth, termHeight)
 			ui.Clear()
+		case "<MouseLeft>":
+			// termWidth, termHeight := ui.TerminalDimensions()
+
+			payload := e.Payload.(ui.Mouse)
+
+			// -2 is for the top and lower border
+			numberOfEntriesDisplayed := boardPanel.Dy() - 2
+
+			board.Logger.Printf("x: %d, y: %d", boardPanel.Dx(), boardPanel.Dy())
+			currentlySelectedThreadInMenu := boardPanel.SelectedRow % numberOfEntriesDisplayed
+			board.Logger.Printf("currently selected relative entry: %d", currentlySelectedThreadInMenu)
+
+			selectEntryNo := payload.Y - currentlySelectedThreadInMenu - 2
+			board.Logger.Printf("clicked %d", selectEntryNo)
+			boardPanel.ScrollAmount(selectEntryNo)
+			loadThread()
 		}
 
 		if previousKey == "g" {
