@@ -65,4 +65,4 @@ Zum Beispiel für den Sync über Dropbox: `MANIACFORUM_READLOG_FILE="$HOME/dropb
 
 ### Known Bugs
 
-* Message Window does not scroll on any long message that is not the initially loaded message
+* Long Messages are not completely shown. This can be seen with small terminals and long messages. Max number of lines in message?

@@ -104,6 +104,8 @@ func loadMessage() {
 		// TODO Copy these two commands into function
 		activeThreads.Messages[threadPanel.SelectedRow].Read = true
 		board.SetMessageAsRead(message.ID)
+
+		ui.Clear()
 	}
 
 	// Render thread for read messages
