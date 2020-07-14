@@ -62,3 +62,7 @@ Zum Beispiel für den Sync über Dropbox: `MANIACFORUM_READLOG_FILE="$HOME/dropb
 * Make git clean
 * Look up latest release under: https://github.com/snipem/maniacforum/releases
 * `make TAG_VERSION=0.0.12 release`
+
+### Known Bugs
+
+* Message Window does not scroll on any long message that is not the initially loaded message
