@@ -99,7 +99,7 @@ func loadMessage() {
 		message.EnrichedContent, message.Links = util.EnrichLinks(message.Content)
 		messagePanel.Rows = strings.Split(util.FormatQuote(message.EnrichedContent), "\n")
 		messagePanel.ScrollTop()
-		board.Logger.Printf("loading message took %ss", time.Since(start))
+		board.Logger.Printf("loading message took %s", time.Since(start))
 
 		// TODO Copy these two commands into function
 		activeThreads.Messages[threadPanel.SelectedRow].Read = true
