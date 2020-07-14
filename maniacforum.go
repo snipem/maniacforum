@@ -394,10 +394,6 @@ func run() {
 			} else if handleMouseClickEventOnList(e, threadPanel) {
 				loadMessage()
 				activePane = 2
-			} else if handleMouseClickEventOnList(e, messagePanel) {
-				// TODO implement me
-				// clickLink()
-				activePane = 3
 			}
 			colorize()
 
