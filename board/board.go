@@ -18,8 +18,6 @@ import (
 // BoardURL is the base url of the forum
 var BoardURL = "https://www.maniac-forum.de/forum/"
 
-var debug = false
-
 // Forum represents the whole forum
 type Forum struct {
 	Boards []Board
@@ -82,9 +80,11 @@ func init() {
 
 	Logger = log.New(f, "board.go ", log.LstdFlags)
 
-	if !debug {
+	if _, ok := os.LookupEnv("MANIACFORUM_DEBUG"); ok {
+	} else {
 		Logger.SetOutput(ioutil.Discard)
 	}
+
 }
 
 // getReadLogFilePath from env var or default .config file path

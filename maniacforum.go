@@ -104,6 +104,8 @@ func loadMessage() {
 		// TODO Copy these two commands into function
 		activeThreads.Messages[threadPanel.SelectedRow].Read = true
 		board.SetMessageAsRead(message.ID)
+
+		ui.Clear()
 	}
 
 	// Render thread for read messages
@@ -315,6 +317,8 @@ func run() {
 			ui.Clear()
 			renderTab()
 			initialize()
+		case "<MouseWheelDown>":
+			messagePanel.ScrollPageDown()
 		case "<Down>":
 			switch activePane {
 			case 1:
@@ -326,6 +330,8 @@ func run() {
 			case 3:
 				messagePanel.ScrollPageDown()
 			}
+		case "<MouseWheelUp>":
+			messagePanel.ScrollPageUp()
 		case "<Up>":
 			switch activePane {
 			case 1:
@@ -374,6 +380,23 @@ func run() {
 			termWidth, termHeight := ui.TerminalDimensions()
 			grid.SetRect(0, 0, termWidth, termHeight)
 			ui.Clear()
+		case "<MouseLeft>":
+
+			if handleMouseClickEventOnTabBar(e, tabpane) {
+				loadBoard()
+				activePane = 0
+				ui.Clear()
+				renderTab()
+				initialize()
+			} else if handleMouseClickEventOnList(e, boardPanel) {
+				loadThread()
+				activePane = 1
+			} else if handleMouseClickEventOnList(e, threadPanel) {
+				loadMessage()
+				activePane = 2
+			}
+			colorize()
+
 		}
 
 		if previousKey == "g" {
@@ -386,4 +409,40 @@ func run() {
 		ui.Render(boardPanel, messagePanel, threadPanel, tabpane)
 
 	}
+}
+
+func handleMouseClickEventOnTabBar(e ui.Event, bar *widgets.TabPane) bool {
+	payload := e.Payload.(ui.Mouse)
+	x0, y0 := bar.Inner.Min.X, bar.Inner.Min.Y
+	x1, y1 := bar.Inner.Max.X, bar.Inner.Max.Y
+	if x0 <= payload.X && payload.X <= x1 && y0 <= payload.Y && payload.Y <= y1 {
+
+		// Calculate clicked tab by splitting up the whole string bar "Smalltalk | For Sale | ... "
+		// at the Y position of the mouse event. The number of | in the resulting string will reflect
+		// the clicked tab
+		wholeTabBarString := strings.Join(bar.TabNames, " | ")
+		tabNrClicked := strings.Count(wholeTabBarString[0:payload.X], "|")
+
+		bar.ActiveTabIndex = tabNrClicked
+		return true
+	}
+	return false
+}
+
+func handleMouseClickEventOnList(e ui.Event, list *widgets.List) bool {
+
+	payload := e.Payload.(ui.Mouse)
+
+	border := 0
+	if list.BorderTop {
+		border = 1
+	}
+	x0, y0 := list.Inner.Min.X, list.Inner.Min.Y
+	x1, y1 := list.Inner.Max.X, list.Inner.Max.Y
+	if x0 <= payload.X && payload.X <= x1 && y0 <= payload.Y && payload.Y <= y1 {
+		list.SelectedRow = payload.Y - list.Rectangle.Min.Y - border + list.TopRow
+		return true
+	}
+	return false
+
 }

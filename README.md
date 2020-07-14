@@ -63,3 +63,7 @@ Zum Beispiel für den Sync über Dropbox: `MANIACFORUM_READLOG_FILE="$HOME/dropb
 * Make git clean
 * Look up latest release under: https://github.com/snipem/maniacforum/releases
 * `make TAG_VERSION=0.0.12 release`
+
+### Known Bugs
+
+* Long Messages are not fully shown. This happens with small terminals and long messages. Max number of lines in message?
