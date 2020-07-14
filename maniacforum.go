@@ -315,8 +315,9 @@ func run() {
 			ui.Clear()
 			renderTab()
 			initialize()
-		// TODO Not working
-		case "<MouseWheelDown>", "<Down>":
+		case "<MouseWheelDown>":
+			messagePanel.ScrollPageDown()
+		case "<Down>":
 			switch activePane {
 			case 1:
 				boardPanel.ScrollDown()
@@ -327,7 +328,9 @@ func run() {
 			case 3:
 				messagePanel.ScrollPageDown()
 			}
-		case "<MouseWheelUp>", "<Up>":
+		case "<MouseWheelUp>":
+			messagePanel.ScrollPageUp()
+		case "<Up>":
 			switch activePane {
 			case 1:
 				boardPanel.ScrollUp()
