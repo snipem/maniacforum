@@ -422,7 +422,7 @@ func handleMouseClickEventOnTabBar(e ui.Event, bar *widgets.TabPane) bool {
 	if x0 <= payload.X && payload.X <= x1 && y0 <= payload.Y && payload.Y <= y1 {
 
 		// Calculate clicked tab by splitting up the whole string bar "Smalltalk | For Sale | ... "
-		// at the Y position of the mouse evnet. The number of | in the resulting string will reflect
+		// at the Y position of the mouse event. The number of | in the resulting string will reflect
 		// the clicked tab
 		wholeTabBarString := strings.Join(bar.TabNames, " | ")
 		tabNrClicked := strings.Count(wholeTabBarString[0:payload.X], "|")
