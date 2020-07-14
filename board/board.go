@@ -263,6 +263,7 @@ func GetForum() Forum {
 
 }
 
+// GetBoard fetches a Board like Smalltalk and the list of threads
 func GetBoard(boardID string) Board {
 
 	var board Board
