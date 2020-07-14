@@ -1,6 +1,7 @@
 package board
 
 import (
+	"bytes"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -9,6 +10,9 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
+
+	"github.com/patrickmn/go-cache"
 
 	"net/url"
 
@@ -67,8 +71,10 @@ type User struct {
 // Logger is a logger for the board
 var Logger *log.Logger
 var readLogfile string
+var c *cache.Cache
 
 func init() {
+	c = cache.New(5*time.Minute, 10*time.Minute)
 	readLogfile = getReadLogFilePath()
 
 	f, err := os.OpenFile("maniacforum.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
@@ -214,18 +220,35 @@ func IsMessageRead(id string) bool {
 func getDoc(resource string) *goquery.Document {
 	// Request the HTML page.
 	url := BoardURL + resource
-	Logger.Printf("Fetching %s", url)
-	res, err := http.Get(url)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer res.Body.Close()
-	if res.StatusCode != 200 {
-		log.Fatalf("status code error: %d %s", res.StatusCode, res.Status)
+
+	var body string
+
+	// Check if resource is already in cache
+	cachedBody, found := c.Get(url)
+	if found { // Use cached resource
+		body = cachedBody.(string)
+	} else { // Fetch resource if not in cache
+
+		Logger.Printf("Fetching %s", url)
+		res, err := http.Get(url)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer res.Body.Close()
+		if res.StatusCode != 200 {
+			log.Fatalf("status code error: %d %s", res.StatusCode, res.Status)
+		}
+
+		buf := new(bytes.Buffer)
+		buf.ReadFrom(res.Body)
+		fetchedBody := buf.String()
+		c.Set(url, fetchedBody, cache.DefaultExpiration)
+		body = fetchedBody
 	}
 
 	// Load the HTML document
-	doc, err := goquery.NewDocumentFromReader(res.Body)
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(body))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -233,7 +256,7 @@ func getDoc(resource string) *goquery.Document {
 
 }
 
-// GetForum retuns the whole forum
+// GetForum retuns the forum
 func GetForum() Forum {
 
 	mainPage := getDoc("pxmboard.php")
