@@ -410,6 +410,7 @@ func handleMouseClickEvent(e ui.Event, list *widgets.List) bool {
 	}
 	x0, y0 := list.Inner.Min.X, list.Inner.Min.Y
 	x1, y1 := list.Inner.Max.X, list.Inner.Max.Y
+	// FIXME First line can't be selected
 	if x0 < payload.X && payload.X < x1 && y0 < payload.Y && payload.Y < y1 {
 		list.SelectedRow = payload.Y - list.Rectangle.Min.Y - border + list.TopRow
 		return true
