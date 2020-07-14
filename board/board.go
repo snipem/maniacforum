@@ -73,6 +73,8 @@ var Logger *log.Logger
 var readLogfile string
 var c *cache.Cache
 
+var useCache = false
+
 func init() {
 	c = cache.New(5*time.Minute, 10*time.Minute)
 	readLogfile = getReadLogFilePath()
@@ -217,6 +219,7 @@ func IsMessageRead(id string) bool {
 	return isRead
 }
 
+// getDoc fetches a resource of the board directly or via cache if `useCache` is true
 func getDoc(resource string) *goquery.Document {
 	// Request the HTML page.
 	url := BoardURL + resource
@@ -224,27 +227,12 @@ func getDoc(resource string) *goquery.Document {
 	var body string
 
 	// Check if resource is already in cache
-	cachedBody, found := c.Get(url)
-	if found { // Use cached resource
+	cachedBody, foundInCache := c.Get(url)
+	if useCache && foundInCache { // Use cached resource if cache is used
 		body = cachedBody.(string)
 	} else { // Fetch resource if not in cache
-
-		Logger.Printf("Fetching %s", url)
-		res, err := http.Get(url)
-
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer res.Body.Close()
-		if res.StatusCode != 200 {
-			log.Fatalf("status code error: %d %s", res.StatusCode, res.Status)
-		}
-
-		buf := new(bytes.Buffer)
-		buf.ReadFrom(res.Body)
-		fetchedBody := buf.String()
-		c.Set(url, fetchedBody, cache.DefaultExpiration)
-		body = fetchedBody
+		body = httpFetch(url)
+		c.Set(url, body, cache.DefaultExpiration)
 	}
 
 	// Load the HTML document
@@ -254,6 +242,25 @@ func getDoc(resource string) *goquery.Document {
 	}
 	return doc
 
+}
+
+// httpFetch fetches the content of a url and returns the body of the response
+func httpFetch(url string) string {
+
+	Logger.Printf("Fetching %s", url)
+	res, err := http.Get(url)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer res.Body.Close()
+	if res.StatusCode != 200 {
+		log.Fatalf("status code error: %d %s", res.StatusCode, res.Status)
+	}
+
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(res.Body)
+	return buf.String()
 }
 
 // GetForum retuns the forum
