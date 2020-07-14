@@ -213,7 +213,9 @@ func IsMessageRead(id string) bool {
 
 func getDoc(resource string) *goquery.Document {
 	// Request the HTML page.
-	res, err := http.Get(BoardURL + resource)
+	url := BoardURL + resource
+	Logger.Printf("Fetching %s", url)
+	res, err := http.Get(url)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -268,8 +270,7 @@ func GetBoard(boardID string) Board {
 	resource := "pxmboard.php?mode=threadlist&brdid=" + boardID + "&sortorder=last"
 	doc := getDoc(resource)
 
-	// TODO Get from actual board
-	board.Title = "Smalltalk"
+	board.Title = doc.Find(".currentBoard > span").Text()
 	board.ID = boardID
 
 	doc.Find("#threadlist > a").Each(func(i int, s *goquery.Selection) {
