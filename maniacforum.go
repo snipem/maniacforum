@@ -377,12 +377,22 @@ func run() {
 			ui.Clear()
 		case "<MouseLeft>":
 
-			if handleMouseClickEvent(e, boardPanel) {
+			if handleMouseClickEventOnTabBar(e, tabpane) {
+				loadBoard()
+				activePane = 0
+				ui.Clear()
+				renderTab()
+				initialize()
+			} else if handleMouseClickEventOnList(e, boardPanel) {
 				loadThread()
 				activePane = 1
-			} else if handleMouseClickEvent(e, threadPanel) {
+			} else if handleMouseClickEventOnList(e, threadPanel) {
 				loadMessage()
 				activePane = 2
+			} else if handleMouseClickEventOnList(e, messagePanel) {
+				// TODO implement me
+				// clickLink()
+				activePane = 3
 			}
 			colorize()
 
@@ -400,7 +410,25 @@ func run() {
 	}
 }
 
-func handleMouseClickEvent(e ui.Event, list *widgets.List) bool {
+func handleMouseClickEventOnTabBar(e ui.Event, bar *widgets.TabPane) bool {
+	payload := e.Payload.(ui.Mouse)
+	x0, y0 := bar.Inner.Min.X, bar.Inner.Min.Y
+	x1, y1 := bar.Inner.Max.X, bar.Inner.Max.Y
+	if x0 <= payload.X && payload.X <= x1 && y0 <= payload.Y && payload.Y <= y1 {
+
+		// Calculate clicked tab by splitting up the whole string bar "Smalltalk | For Sale | ... "
+		// at the Y position of the mouse evnet. The number of | in the resulting string will reflect
+		// the clicked tab
+		wholeTabBarString := strings.Join(bar.TabNames, " | ")
+		tabNrClicked := strings.Count(wholeTabBarString[0:payload.X], "|")
+
+		bar.ActiveTabIndex = tabNrClicked
+		return true
+	}
+	return false
+}
+
+func handleMouseClickEventOnList(e ui.Event, list *widgets.List) bool {
 
 	payload := e.Payload.(ui.Mouse)
 
