@@ -376,21 +376,16 @@ func run() {
 			grid.SetRect(0, 0, termWidth, termHeight)
 			ui.Clear()
 		case "<MouseLeft>":
-			// termWidth, termHeight := ui.TerminalDimensions()
 
-			payload := e.Payload.(ui.Mouse)
+			if handleMouseClickEvent(e, boardPanel) {
+				loadThread()
+				activePane = 1
+			} else if handleMouseClickEvent(e, threadPanel) {
+				loadMessage()
+				activePane = 2
+			}
+			colorize()
 
-			// -2 is for the top and lower border
-			numberOfEntriesDisplayed := boardPanel.Dy() - 2
-
-			board.Logger.Printf("x: %d, y: %d", boardPanel.Dx(), boardPanel.Dy())
-			currentlySelectedThreadInMenu := boardPanel.SelectedRow % numberOfEntriesDisplayed
-			board.Logger.Printf("currently selected relative entry: %d", currentlySelectedThreadInMenu)
-
-			selectEntryNo := payload.Y - currentlySelectedThreadInMenu - 2
-			board.Logger.Printf("clicked %d", selectEntryNo)
-			boardPanel.ScrollAmount(selectEntryNo)
-			loadThread()
 		}
 
 		if previousKey == "g" {
@@ -403,4 +398,22 @@ func run() {
 		ui.Render(boardPanel, messagePanel, threadPanel, tabpane)
 
 	}
+}
+
+func handleMouseClickEvent(e ui.Event, list *widgets.List) bool {
+
+	payload := e.Payload.(ui.Mouse)
+
+	border := 0
+	if list.BorderTop {
+		border = 1
+	}
+	x0, y0 := list.Inner.Min.X, list.Inner.Min.Y
+	x1, y1 := list.Inner.Max.X, list.Inner.Max.Y
+	if x0 < payload.X && payload.X < x1 && y0 < payload.Y && payload.Y < y1 {
+		list.SelectedRow = payload.Y - list.Rectangle.Min.Y - border + list.TopRow
+		return true
+	}
+	return false
+
 }
