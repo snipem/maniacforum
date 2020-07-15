@@ -30,8 +30,8 @@ func EnrichContent(content string, wrapAt int) (string, []string) {
 
 }
 
-// FormatQuote formats a quote with TermUi specific color formatting
-func FormatQuote(unformatted string) string {
+// formatQuote formats a quote with TermUi specific color formatting
+func formatQuote(unformatted string) string {
 	r := regexp.MustCompile("^>.*$")
 	formatted := ""
 	for _, line := range strings.Split(strings.TrimSuffix(unformatted, "\n"), "\n") {

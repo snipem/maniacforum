@@ -98,7 +98,7 @@ func loadMessage() {
 		message = board.GetMessage(activeThreads.Messages[threadPanel.SelectedRow].Link)
 
 		message.EnrichedContent, message.Links = util.EnrichContent(message.Content, messagePanel.Inner.Dx())
-		messagePanel.Rows = strings.Split(util.FormatQuote(message.EnrichedContent), "\n")
+		messagePanel.Rows = strings.Split(message.EnrichedContent, "\n")
 		messagePanel.ScrollTop()
 
 		// TODO Copy these two commands into function
@@ -183,7 +183,7 @@ func renderThread() {
 	}
 	message.EnrichedContent, message.Links = util.EnrichContent(message.Content, messagePanel.Inner.Dx())
 	// TODO Workaround for termui not rendering the first line starting with a quote in red. Add a leading line
-	messagePanel.Rows = strings.Split("\n"+util.FormatQuote(message.EnrichedContent), "\n")
+	messagePanel.Rows = strings.Split("\n"+message.EnrichedContent, "\n")
 
 }
 

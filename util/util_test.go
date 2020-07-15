@@ -49,24 +49,25 @@ commented`
 
 func TestQuoteFormatting(t *testing.T) {
 
-	assert.Equal(t, FormatQuote("> Test"), "[> Test](fg:red)")
+	assert.Equal(t, formatQuote("> Test"), "[> Test](fg:red)")
 
 	have := `Bla
 > Test 123
 Ergebnis`
 
 	want := `Bla
-[> Test 123](fg:red)
+[> Test](fg:red)
+[123](fg:red)
 Ergebnis`
 
-	assert.Equal(t, FormatQuote(have), want)
+	assert.Equal(t, formatQuote(have), want)
 }
 
 func TestQuoteFormattingNothingToFormat(t *testing.T) {
-	assert.Equal(t, FormatQuote("nothing to format"), "nothing to format")
+	assert.Equal(t, formatQuote("nothing to format"), "nothing to format")
 
 	origin := "[http://eins.de]"
-	have := FormatQuote(origin)
+	have := formatQuote(origin)
 	assert.Equal(t, have, origin)
 
 }
