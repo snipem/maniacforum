@@ -67,3 +67,4 @@ Zum Beispiel für den Sync über Dropbox: `MANIACFORUM_READLOG_FILE="$HOME/dropb
 ### Known Bugs
 
 * Multiline quotes not working
+* Flicker on initial load
