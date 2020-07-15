@@ -1,5 +1,7 @@
 package util
 
+// run: go test -timeout 30s github.com/snipem/maniacforum/util
+
 import (
 	"testing"
 
@@ -49,7 +51,7 @@ commented`
 
 func TestQuoteFormatting(t *testing.T) {
 
-	assert.Equal(t, formatQuote("> Test"), "[> Test](fg:red)")
+	assert.Equal(t, wrapAndformatQuote("> Test", 100), "[> Test](fg:red)")
 
 	have := `Bla
 > Test 123
@@ -60,14 +62,14 @@ Ergebnis`
 [123](fg:red)
 Ergebnis`
 
-	assert.Equal(t, formatQuote(have), want)
+	assert.Equal(t, want, wrapAndformatQuote(have, 7))
 }
 
 func TestQuoteFormattingNothingToFormat(t *testing.T) {
-	assert.Equal(t, formatQuote("nothing to format"), "nothing to format")
+	assert.Equal(t, "nothing to format", wrapAndformatQuote("nothing to format", 100))
 
 	origin := "[http://eins.de]"
-	have := formatQuote(origin)
+	have := wrapAndformatQuote(origin, 100)
 	assert.Equal(t, have, origin)
 
 }
