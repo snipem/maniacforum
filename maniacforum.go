@@ -309,6 +309,10 @@ func run() {
 		}
 	}
 
+	// Render initially
+	renderTab()
+	ui.Render(boardPanel, messagePanel, threadPanel, tabpane)
+
 	previousKey := ""
 	uiEvents := ui.PollEvents()
 	for {
