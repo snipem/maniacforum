@@ -1,4 +1,6 @@
 language: go
+go:
+  - 1.14
 sudo: false
 before_install:
   - go get github.com/mattn/goveralls
