@@ -247,7 +247,7 @@ func getDoc(resource string) *goquery.Document {
 // httpFetch fetches the content of a url and returns the body of the response
 func httpFetch(url string) string {
 
-	Logger.Printf("Fetching %s", url)
+	Logger.Printf("Fetching %s", strings.Replace(url, BoardURL, "", 1))
 	res, err := http.Get(url)
 
 	if err != nil {
