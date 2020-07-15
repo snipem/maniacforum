@@ -28,6 +28,25 @@ nox
 
 }
 
+func TestFullEnriching(t *testing.T) {
+
+	have := `Erste Zeile
+> Link 123
+not commented`
+
+	want := `Erste
+Zeile
+[> Link](fg:red)
+[123](fg:red)
+not
+commented`
+
+	enriched, _ := EnrichContent(have, 7)
+
+	assert.Equal(t, want, enriched)
+
+}
+
 func TestQuoteFormatting(t *testing.T) {
 
 	assert.Equal(t, FormatQuote("> Test"), "[> Test](fg:red)")
