@@ -73,7 +73,7 @@ var Logger *log.Logger
 var readLogfile string
 var c *cache.Cache
 
-var useCache = false
+var useCache = true
 
 func init() {
 	c = cache.New(5*time.Minute, 10*time.Minute)
