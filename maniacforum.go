@@ -302,17 +302,7 @@ func run() {
 	ui.Render(grid)
 	initialize()
 
-	renderTab := func() {
-		switch tabpane.ActiveTabIndex {
-		case 0:
-			ui.Render(grid)
-		case 1:
-			ui.Render(grid)
-		}
-	}
-
 	// Render initially
-	renderTab()
 	ui.Render(boardPanel, messagePanel, threadPanel, tabpane)
 
 	previousKey := ""
@@ -342,13 +332,11 @@ func run() {
 		case "<Left>":
 			tabpane.FocusLeft()
 			ui.Clear()
-			renderTab()
 			initialize()
 		case "n":
 		case "<Right>":
 			tabpane.FocusRight()
 			ui.Clear()
-			renderTab()
 			initialize()
 		case "<MouseWheelDown>":
 			messagePanel.ScrollPageDown()
@@ -419,7 +407,6 @@ func run() {
 				loadBoard()
 				activePane = 0
 				ui.Clear()
-				renderTab()
 				initialize()
 			} else if handleMouseClickEventOnList(e, boardPanel) {
 				loadThread()
@@ -438,7 +425,6 @@ func run() {
 			previousKey = e.ID
 		}
 
-		renderTab()
 		ui.Render(boardPanel, messagePanel, threadPanel, tabpane)
 	}
 }
