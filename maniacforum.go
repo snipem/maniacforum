@@ -96,16 +96,31 @@ func loadMessage() {
 	if len(activeThreads.Messages) > 0 {
 		start := time.Now()
 		message = board.GetMessage(activeThreads.Messages[threadPanel.SelectedRow].Link)
+
 		message.EnrichedContent, message.Links = util.EnrichLinks(message.Content)
 		messagePanel.Rows = strings.Split(util.FormatQuote(message.EnrichedContent), "\n")
 		messagePanel.ScrollTop()
-		board.Logger.Printf("loading message took %s", time.Since(start))
 
 		// TODO Copy these two commands into function
 		activeThreads.Messages[threadPanel.SelectedRow].Read = true
 		board.SetMessageAsRead(message.ID)
 
+		board.Logger.Printf("loading message %s by '%s' took %s, fetch ahead took", message.ID, message.Author.Name, time.Since(start))
+
+		// Fully render ui before fetching messages for cache
 		ui.Clear()
+
+		fetchAheadMessages := 2
+
+		// Get the next two messages for the cache, ignore them for now, but make them available for the cache
+		// Fixme does it block the end of the function?
+		if len(activeThreads.Messages) >= threadPanel.SelectedRow+fetchAheadMessages {
+			for i := 1; i <= fetchAheadMessages; i++ {
+				// Go routine will run in background even if function finishes. The actual message is returned
+				// and the content of the fetch ahead messages is stored into the cache
+				go board.GetMessage(activeThreads.Messages[threadPanel.SelectedRow+i].Link)
+			}
+		}
 	}
 
 	// Render thread for read messages
