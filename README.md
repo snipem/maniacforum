@@ -66,4 +66,4 @@ Zum Beispiel für den Sync über Dropbox: `MANIACFORUM_READLOG_FILE="$HOME/dropb
 
 ### Known Bugs
 
-* Long Messages are not fully shown. This happens with small terminals and long messages. Max number of lines in message?
+* None

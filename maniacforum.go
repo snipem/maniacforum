@@ -97,7 +97,7 @@ func loadMessage() {
 		start := time.Now()
 		message = board.GetMessage(activeThreads.Messages[threadPanel.SelectedRow].Link)
 
-		message.EnrichedContent, message.Links = util.EnrichLinks(message.Content)
+		message.EnrichedContent, message.Links = util.EnrichContent(message.Content, messagePanel.Inner.Dx())
 		messagePanel.Rows = strings.Split(util.FormatQuote(message.EnrichedContent), "\n")
 		messagePanel.ScrollTop()
 
@@ -181,7 +181,7 @@ func renderThread() {
 			strings.Repeat("    ", m.Hierarchy-1)+
 				"○ ["+m.Topic+"](fg:"+messageColor+") ["+m.Date+" "+m.Author.Name+"](fg:white)")
 	}
-	message.EnrichedContent, message.Links = util.EnrichLinks(message.Content)
+	message.EnrichedContent, message.Links = util.EnrichContent(message.Content, messagePanel.Inner.Dx())
 	// TODO Workaround for termui not rendering the first line starting with a quote in red. Add a leading line
 	messagePanel.Rows = strings.Split("\n"+util.FormatQuote(message.EnrichedContent), "\n")
 
@@ -274,10 +274,9 @@ func run() {
 	boardPanel = widgets.NewList()
 	threadPanel = widgets.NewList()
 
-	messagePanel.WrapText = true
+	messagePanel.WrapText = false
 
 	loadForum()
-	initialize()
 
 	boardPanel.WrapText = false
 	colorize()
@@ -299,6 +298,7 @@ func run() {
 	grid.SetRect(0, 0, termWidth, termHeight)
 
 	ui.Render(grid)
+	initialize()
 
 	renderTab := func() {
 		switch tabpane.ActiveTabIndex {
@@ -432,7 +432,6 @@ func run() {
 
 		renderTab()
 		ui.Render(boardPanel, messagePanel, threadPanel, tabpane)
-
 	}
 }
 

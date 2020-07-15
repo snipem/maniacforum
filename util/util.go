@@ -4,10 +4,13 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/mitchellh/go-wordwrap"
 )
 
-// EnrichLinks enriches links in content with numbers, returns enriched content and list of links
-func EnrichLinks(content string) (string, []string) {
+// EnrichContent enriches links in content with numbers, returns enriched content and list of links
+// It also wraps the text at the number of characters at wrapAt
+func EnrichContent(content string, wrapAt int) (string, []string) {
 	var enrichedContent = content
 	var links []string
 	r := regexp.MustCompile(`\[.*\]`)
@@ -20,7 +23,10 @@ func EnrichLinks(content string) (string, []string) {
 		enrichedContent = strings.Replace(enrichedContent, links[i], "["+strconv.Itoa(i+1)+"]"+cleanLink, 1)
 	}
 
-	return enrichedContent, links
+	// Use own wrapper because termui's wrapping functionality does cut content at the end
+	wrappedContent := wordwrap.WrapString(enrichedContent, uint(wrapAt))
+
+	return wrappedContent, links
 
 }
 

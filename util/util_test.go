@@ -15,7 +15,7 @@ text [https://zwei.de] weiterer text
 nox
 [http://drei.de]`
 
-	enrichedMessage, links := EnrichLinks(message)
+	enrichedMessage, links := EnrichContent(message, 100)
 	assert.Len(t, links, 3)
 
 	assert.Equal(t, "[http://eins.de]", links[0])
