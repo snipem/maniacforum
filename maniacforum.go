@@ -297,6 +297,8 @@ func run() {
 	termWidth, termHeight := ui.TerminalDimensions()
 	grid.SetRect(0, 0, termWidth, termHeight)
 
+	// UI has to be rendered to determine sizes for wrapping, this will
+	// show an empty UI before the initialize function is called
 	ui.Render(grid)
 	initialize()
 
