@@ -105,7 +105,7 @@ func loadMessage() {
 		activeThreads.Messages[threadPanel.SelectedRow].Read = true
 		board.SetMessageAsRead(message.ID)
 
-		board.Logger.Printf("loading message %s by '%s' took %s, fetch ahead took", message.ID, message.Author.Name, time.Since(start))
+		board.Logger.Printf("loading message %s by '%s' took %s", message.ID, message.Author.Name, time.Since(start))
 
 		// Fully render ui before fetching messages for cache
 		ui.Clear()
@@ -151,6 +151,17 @@ func loadThread() {
 	renderThread()
 
 	messagePanel.ScrollTop()
+
+	fetchAheadThreads := 2
+
+	// Get the next two messages for the cache, ignore them for now, but make them available for the cache
+	if len(activeBoard.Threads) >= boardPanel.SelectedRow+fetchAheadThreads {
+		for i := 1; i <= fetchAheadThreads; i++ {
+			// Go routine will run in background even if function finishes. The actual message is returned
+			// and the content of the fetch ahead messages is stored into the cache
+			go board.GetThread(activeBoard.Threads[boardPanel.SelectedRow+i].ID, activeBoard.ID)
+		}
+	}
 }
 
 func renderThread() {
