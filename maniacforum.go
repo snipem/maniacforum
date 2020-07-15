@@ -65,7 +65,7 @@ Globale Steuerung
    J  - Nächster Thread
    K  - Vorheriger Thread
 
-https://github.com/snipem/maniacforum
+[https://github.com/snipem/maniacforum]
 `
 
 func loadBoard() {
@@ -329,7 +329,9 @@ func run() {
 		case "q", "<C-c>":
 			return
 		case "?":
-			messagePanel.Rows = strings.Split(util.FormatQuote(helpPage), "\n")
+			enrichedHelp, helpLinks := util.EnrichContent(helpPage, messagePanel.Inner.Dx())
+			message.Links = helpLinks
+			messagePanel.Rows = strings.Split(enrichedHelp, "\n")
 		case "b":
 		case "<Left>":
 			tabpane.FocusLeft()
