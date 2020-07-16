@@ -19,6 +19,7 @@ Oder alternativ `go get github.com/snipem/maniacforum`.
      ↑ ↓  - Zur Auswahl im aktuellen ausgewählten Menü
      ← →  - Auswahl des Boards
        a  - Auf Nachricht im Standard-Browser antworten
+       e  - Die Nachricht im Standard-Browser öffnen
        ?  - Hilfsseite
        q  - Beenden
      0-9  - Links im Standard-Browser öffnen
@@ -67,3 +68,4 @@ Zum Beispiel für den Sync über Dropbox: `MANIACFORUM_READLOG_FILE="$HOME/dropb
 ### Known Bugs
 
 * Flicker on initial load
+* keypress a bei main thread führt zu absturz

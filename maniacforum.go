@@ -51,6 +51,7 @@ Kontext-Steuerung
  ↑ ↓  - Zur Auswahl im aktuellen ausgewählten Menü
  ← →  - Auswahl des Boards
    a  - Auf Nachricht im Standard-Browser antworten
+   e  - Die Nachricht im Standard-Browser öffnen
    ?  - Hilfsseite
    q  - Beenden
  0-9  - Links im Standard-Browser öffnen
@@ -136,10 +137,16 @@ func selectNextUnreadMessage() {
 	}
 }
 
-// answer uses the default system browser to open the answer link of the currently selected message
-func answer() {
-	err := open.Run(board.BoardURL + "pxmboard.php?mode=messageform&brdid=" + activeBoard.ID + "&msgid=" + message.ID)
-	log.Fatal(err)
+// answerMessage uses the default system browser to open the answerMessage link of the currently selected message
+func answerMessage() {
+	answerURL := board.BoardURL + "pxmboard.php?mode=messageform&brdid=" + activeBoard.ID + "&msgid=" + message.ID
+	open.Run(answerURL)
+}
+
+// openMessage uses the default system browser to open currently selected message
+func openMessage() {
+	answerURL := board.BoardURL + "pxmboard.php?mode=message&brdid=" + activeBoard.ID + "&msgid=" + message.ID
+	open.Run(answerURL)
 }
 
 // loadThread loads selected thread from board and displays the first message
@@ -321,7 +328,9 @@ func run() {
 			linkNr, _ := strconv.Atoi(e.ID)
 			openLink(linkNr)
 		case "a":
-			answer()
+			answerMessage()
+		case "e":
+			openMessage()
 		case "q", "<C-c>":
 			return
 		case "?":
