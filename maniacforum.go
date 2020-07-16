@@ -40,8 +40,6 @@ var messagePanel *widgets.List
 var boardPanel *widgets.List
 var tabpane *widgets.TabPane
 
-var threads []board.Thread
-
 var activePane int
 var maxPane = 3
 
@@ -80,7 +78,7 @@ Globale Steuerung
 func loadBoard() {
 	boardID := mf.active.forum.Boards[tabpane.ActiveTabIndex].ID
 	mf.active.board = board.GetBoard(boardID)
-	threads = mf.active.board.Threads
+	// threads = mf.active.board.Threads
 
 	// Clear board panel
 	boardPanel.Rows = nil
@@ -90,7 +88,7 @@ func loadBoard() {
 	boardPanel.SelectedRow = 0
 	threadPanel.SelectedRow = 0
 
-	for _, thread := range threads {
+	for _, thread := range mf.active.board.Threads {
 
 		threadPrefix := ""
 		if thread.IsSticky {
@@ -159,8 +157,9 @@ func openMessage() {
 
 // loadThread loads selected thread from board and displays the first message
 func loadThread() {
-	mf.active.message = board.GetMessage(threads[boardPanel.SelectedRow].Link)
-	mf.active.threads = board.GetThread(threads[boardPanel.SelectedRow].ID, mf.active.board.ID)
+	// FIXME this logic with Threads and threads seems illogic
+	mf.active.message = board.GetMessage(mf.active.board.Threads[boardPanel.SelectedRow].Link)
+	mf.active.threads = board.GetThread(mf.active.board.Threads[boardPanel.SelectedRow].ID, mf.active.board.ID)
 	threadPanel.SelectedRow = 0
 
 	renderThread()
