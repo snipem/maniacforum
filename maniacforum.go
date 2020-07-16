@@ -30,6 +30,7 @@ type content struct {
 	threads board.Thread
 	board   board.Board
 	forum   board.Forum
+	message board.Message
 }
 
 var mf maniacforum
@@ -40,7 +41,6 @@ var boardPanel *widgets.List
 var tabpane *widgets.TabPane
 
 var threads []board.Thread
-var message board.Message
 
 var activePane int
 var maxPane = 3
@@ -104,17 +104,17 @@ func loadBoard() {
 func loadMessage() {
 	if len(mf.active.threads.Messages) > 0 {
 		start := time.Now()
-		message = board.GetMessage(mf.active.threads.Messages[threadPanel.SelectedRow].Link)
+		mf.active.message = board.GetMessage(mf.active.threads.Messages[threadPanel.SelectedRow].Link)
 
-		message.EnrichedContent, message.Links = util.EnrichContent(message.Content, messagePanel.Inner.Dx())
-		messagePanel.Rows = strings.Split(message.EnrichedContent, "\n")
+		mf.active.message.EnrichedContent, mf.active.message.Links = util.EnrichContent(mf.active.message.Content, messagePanel.Inner.Dx())
+		messagePanel.Rows = strings.Split(mf.active.message.EnrichedContent, "\n")
 		messagePanel.ScrollTop()
 
 		// TODO Copy these two commands into function
 		mf.active.threads.Messages[threadPanel.SelectedRow].Read = true
-		board.SetMessageAsRead(message.ID)
+		board.SetMessageAsRead(mf.active.message.ID)
 
-		board.Logger.Printf("loading message %s by '%s' took %s", message.ID, message.Author.Name, time.Since(start))
+		board.Logger.Printf("loading message %s by '%s' took %s", mf.active.message.ID, mf.active.message.Author.Name, time.Since(start))
 
 		// Fully render ui before fetching messages for cache
 		ui.Clear()
@@ -147,19 +147,19 @@ func selectNextUnreadMessage() {
 
 // answerMessage uses the default system browser to open the answerMessage link of the currently selected message
 func answerMessage() {
-	answerURL := board.BoardURL + "pxmboard.php?mode=messageform&brdid=" + mf.active.board.ID + "&msgid=" + message.ID
+	answerURL := board.BoardURL + "pxmboard.php?mode=messageform&brdid=" + mf.active.board.ID + "&msgid=" + mf.active.message.ID
 	open.Run(answerURL)
 }
 
 // openMessage uses the default system browser to open currently selected message
 func openMessage() {
-	answerURL := board.BoardURL + "pxmboard.php?mode=message&brdid=" + mf.active.board.ID + "&msgid=" + message.ID
+	answerURL := board.BoardURL + "pxmboard.php?mode=message&brdid=" + mf.active.board.ID + "&msgid=" + mf.active.message.ID
 	open.Run(answerURL)
 }
 
 // loadThread loads selected thread from board and displays the first message
 func loadThread() {
-	message = board.GetMessage(threads[boardPanel.SelectedRow].Link)
+	mf.active.message = board.GetMessage(threads[boardPanel.SelectedRow].Link)
 	mf.active.threads = board.GetThread(threads[boardPanel.SelectedRow].ID, mf.active.board.ID)
 	threadPanel.SelectedRow = 0
 
@@ -196,18 +196,18 @@ func renderThread() {
 			strings.Repeat("    ", m.Hierarchy-1)+
 				"○ ["+m.Topic+"](fg:"+messageColor+") ["+m.Date+" "+m.Author.Name+"](fg:white)")
 	}
-	message.EnrichedContent, message.Links = util.EnrichContent(message.Content, messagePanel.Inner.Dx())
+	mf.active.message.EnrichedContent, mf.active.message.Links = util.EnrichContent(mf.active.message.Content, messagePanel.Inner.Dx())
 	// TODO Workaround for termui not rendering the first line starting with a quote in red. Add a leading line
-	messagePanel.Rows = strings.Split("\n"+message.EnrichedContent, "\n")
+	messagePanel.Rows = strings.Split("\n"+mf.active.message.EnrichedContent, "\n")
 
 }
 
 // openLinks opens a link in the displayed message with the default system browser
 func openLink(nr int) error {
-	if nr > len(message.Links) {
+	if nr > len(mf.active.message.Links) {
 		return fmt.Errorf("No link with number %d in message", nr)
 	}
-	link := message.Links[nr-1]
+	link := mf.active.message.Links[nr-1]
 	cleanedLink := strings.Replace(link, "[", "", 1)
 	cleanedLink = strings.Replace(cleanedLink, "]", "", 1)
 	err := open.Run(cleanedLink)
@@ -343,7 +343,7 @@ func run() {
 			return
 		case "?":
 			enrichedHelp, helpLinks := util.EnrichContent(helpPage, messagePanel.Inner.Dx())
-			message.Links = helpLinks
+			mf.active.message.Links = helpLinks
 			messagePanel.Rows = strings.Split(enrichedHelp, "\n")
 		case "b":
 		case "<Left>":
