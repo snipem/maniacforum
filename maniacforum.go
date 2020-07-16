@@ -23,22 +23,25 @@ import (
 
 // maniacforum ...
 type maniacforum struct {
-	active content
+	active maniacforumModel
+	ui     uiContent
 }
 
-type content struct {
+type maniacforumModel struct {
 	threads board.Thread
 	board   board.Board
 	forum   board.Forum
 	message board.Message
 }
 
-var mf maniacforum
+type uiContent struct {
+	threadPanel  *widgets.List
+	messagePanel *widgets.List
+	boardPanel   *widgets.List
+	tabpane      *widgets.TabPane
+}
 
-var threadPanel *widgets.List
-var messagePanel *widgets.List
-var boardPanel *widgets.List
-var tabpane *widgets.TabPane
+var mf maniacforum
 
 var activePane int
 var maxPane = 3
@@ -76,17 +79,17 @@ Globale Steuerung
 `
 
 func loadBoard() {
-	boardID := mf.active.forum.Boards[tabpane.ActiveTabIndex].ID
+	boardID := mf.active.forum.Boards[mf.ui.tabpane.ActiveTabIndex].ID
 	mf.active.board = board.GetBoard(boardID)
 	// threads = mf.active.board.Threads
 
 	// Clear board panel
-	boardPanel.Rows = nil
-	messagePanel.Rows = nil
-	threadPanel.Rows = nil
+	mf.ui.boardPanel.Rows = nil
+	mf.ui.messagePanel.Rows = nil
+	mf.ui.threadPanel.Rows = nil
 
-	boardPanel.SelectedRow = 0
-	threadPanel.SelectedRow = 0
+	mf.ui.boardPanel.SelectedRow = 0
+	mf.ui.threadPanel.SelectedRow = 0
 
 	for _, thread := range mf.active.board.Threads {
 
@@ -95,21 +98,21 @@ func loadBoard() {
 			threadPrefix = "⋌ "
 		}
 
-		boardPanel.Rows = append(boardPanel.Rows, threadPrefix+thread.Title+" ["+thread.Date+"](fg:white)")
+		mf.ui.boardPanel.Rows = append(mf.ui.boardPanel.Rows, threadPrefix+thread.Title+" ["+thread.Date+"](fg:white)")
 	}
 }
 
 func loadMessage() {
 	if len(mf.active.threads.Messages) > 0 {
 		start := time.Now()
-		mf.active.message = board.GetMessage(mf.active.threads.Messages[threadPanel.SelectedRow].Link)
+		mf.active.message = board.GetMessage(mf.active.threads.Messages[mf.ui.threadPanel.SelectedRow].Link)
 
-		mf.active.message.EnrichedContent, mf.active.message.Links = util.EnrichContent(mf.active.message.Content, messagePanel.Inner.Dx())
-		messagePanel.Rows = strings.Split(mf.active.message.EnrichedContent, "\n")
-		messagePanel.ScrollTop()
+		mf.active.message.EnrichedContent, mf.active.message.Links = util.EnrichContent(mf.active.message.Content, mf.ui.messagePanel.Inner.Dx())
+		mf.ui.messagePanel.Rows = strings.Split(mf.active.message.EnrichedContent, "\n")
+		mf.ui.messagePanel.ScrollTop()
 
 		// TODO Copy these two commands into function
-		mf.active.threads.Messages[threadPanel.SelectedRow].Read = true
+		mf.active.threads.Messages[mf.ui.threadPanel.SelectedRow].Read = true
 		board.SetMessageAsRead(mf.active.message.ID)
 
 		board.Logger.Printf("loading message %s by '%s' took %s", mf.active.message.ID, mf.active.message.Author.Name, time.Since(start))
@@ -120,11 +123,11 @@ func loadMessage() {
 		fetchAheadMessages := 2
 
 		// Get the next two messages for the cache, ignore them for now, but make them available for the cache
-		if len(mf.active.threads.Messages) > threadPanel.SelectedRow+fetchAheadMessages {
+		if len(mf.active.threads.Messages) > mf.ui.threadPanel.SelectedRow+fetchAheadMessages {
 			for i := 1; i <= fetchAheadMessages; i++ {
 				// Go routine will run in background even if function finishes. The actual message is returned
 				// and the content of the fetch ahead messages is stored into the cache
-				go board.GetMessage(mf.active.threads.Messages[threadPanel.SelectedRow+i].Link)
+				go board.GetMessage(mf.active.threads.Messages[mf.ui.threadPanel.SelectedRow+i].Link)
 			}
 		}
 	}
@@ -135,9 +138,9 @@ func loadMessage() {
 
 // selectNextUnreadMessage selects the next unread message in the current thread
 func selectNextUnreadMessage() {
-	for i := threadPanel.SelectedRow + 1; i < len(mf.active.threads.Messages); i++ {
+	for i := mf.ui.threadPanel.SelectedRow + 1; i < len(mf.active.threads.Messages); i++ {
 		if !mf.active.threads.Messages[i].Read {
-			threadPanel.SelectedRow = i
+			mf.ui.threadPanel.SelectedRow = i
 			return
 		}
 	}
@@ -158,29 +161,29 @@ func openMessage() {
 // loadThread loads selected thread from board and displays the first message
 func loadThread() {
 	// FIXME this logic with Threads and threads seems illogic
-	mf.active.message = board.GetMessage(mf.active.board.Threads[boardPanel.SelectedRow].Link)
-	mf.active.threads = board.GetThread(mf.active.board.Threads[boardPanel.SelectedRow].ID, mf.active.board.ID)
-	threadPanel.SelectedRow = 0
+	mf.active.message = board.GetMessage(mf.active.board.Threads[mf.ui.boardPanel.SelectedRow].Link)
+	mf.active.threads = board.GetThread(mf.active.board.Threads[mf.ui.boardPanel.SelectedRow].ID, mf.active.board.ID)
+	mf.ui.threadPanel.SelectedRow = 0
 
 	renderThread()
 
-	messagePanel.ScrollTop()
+	mf.ui.messagePanel.ScrollTop()
 
 	fetchAheadThreads := 2
 
 	// Get the next two messages for the cache, ignore them for now, but make them available for the cache
-	if len(mf.active.board.Threads) >= boardPanel.SelectedRow+fetchAheadThreads {
+	if len(mf.active.board.Threads) >= mf.ui.boardPanel.SelectedRow+fetchAheadThreads {
 		for i := 1; i <= fetchAheadThreads; i++ {
 			// Go routine will run in background even if function finishes. The actual message is returned
 			// and the content of the fetch ahead messages is stored into the cache
-			go board.GetThread(mf.active.board.Threads[boardPanel.SelectedRow+i].ID, mf.active.board.ID)
+			go board.GetThread(mf.active.board.Threads[mf.ui.boardPanel.SelectedRow+i].ID, mf.active.board.ID)
 		}
 	}
 }
 
 func renderThread() {
 
-	threadPanel.Rows = nil
+	mf.ui.threadPanel.Rows = nil
 
 	// Clear thread panel
 	for _, m := range mf.active.threads.Messages {
@@ -190,14 +193,14 @@ func renderThread() {
 			messageColor = "grey"
 		}
 
-		threadPanel.Rows = append(
-			threadPanel.Rows,
+		mf.ui.threadPanel.Rows = append(
+			mf.ui.threadPanel.Rows,
 			strings.Repeat("    ", m.Hierarchy-1)+
 				"○ ["+m.Topic+"](fg:"+messageColor+") ["+m.Date+" "+m.Author.Name+"](fg:white)")
 	}
-	mf.active.message.EnrichedContent, mf.active.message.Links = util.EnrichContent(mf.active.message.Content, messagePanel.Inner.Dx())
+	mf.active.message.EnrichedContent, mf.active.message.Links = util.EnrichContent(mf.active.message.Content, mf.ui.messagePanel.Inner.Dx())
 	// TODO Workaround for termui not rendering the first line starting with a quote in red. Add a leading line
-	messagePanel.Rows = strings.Split("\n"+mf.active.message.EnrichedContent, "\n")
+	mf.ui.messagePanel.Rows = strings.Split("\n"+mf.active.message.EnrichedContent, "\n")
 
 }
 
@@ -225,10 +228,10 @@ func loadForum() {
 		boardNames = append(boardNames, thread.Title)
 	}
 
-	tabpane = widgets.NewTabPane(boardNames...)
-	// tabpane.SetRect(0, 1, 50, 4)
-	tabpane.Border = false
-	tabpane.ActiveTabIndex = 0
+	mf.ui.tabpane = widgets.NewTabPane(boardNames...)
+	// mf.ui.tabpane.SetRect(0, 1, 50, 4)
+	mf.ui.tabpane.Border = false
+	mf.ui.tabpane.ActiveTabIndex = 0
 }
 
 func initialize() {
@@ -242,24 +245,24 @@ func colorize() {
 	inactiveColor := ui.ColorWhite
 	activeColor := ui.ColorRed
 
-	boardPanel.TextStyle = ui.NewStyle(activeColor)
-	threadPanel.TextStyle = ui.NewStyle(activeColor)
-	tabpane.ActiveTabStyle = ui.NewStyle(activeColor)
+	mf.ui.boardPanel.TextStyle = ui.NewStyle(activeColor)
+	mf.ui.threadPanel.TextStyle = ui.NewStyle(activeColor)
+	mf.ui.tabpane.ActiveTabStyle = ui.NewStyle(activeColor)
 
-	boardPanel.BorderStyle = ui.NewStyle(inactiveColor)
-	threadPanel.BorderStyle = ui.NewStyle(inactiveColor)
-	tabpane.BorderStyle = ui.NewStyle(inactiveColor)
-	messagePanel.BorderStyle = ui.NewStyle(inactiveColor)
+	mf.ui.boardPanel.BorderStyle = ui.NewStyle(inactiveColor)
+	mf.ui.threadPanel.BorderStyle = ui.NewStyle(inactiveColor)
+	mf.ui.tabpane.BorderStyle = ui.NewStyle(inactiveColor)
+	mf.ui.messagePanel.BorderStyle = ui.NewStyle(inactiveColor)
 
 	switch activePane {
 	case 1:
-		boardPanel.TextStyle = ui.NewStyle(activeColor)
-		boardPanel.BorderStyle = ui.NewStyle(activeColor)
+		mf.ui.boardPanel.TextStyle = ui.NewStyle(activeColor)
+		mf.ui.boardPanel.BorderStyle = ui.NewStyle(activeColor)
 	case 2:
-		threadPanel.TextStyle = ui.NewStyle(activeColor)
-		threadPanel.BorderStyle = ui.NewStyle(activeColor)
+		mf.ui.threadPanel.TextStyle = ui.NewStyle(activeColor)
+		mf.ui.threadPanel.BorderStyle = ui.NewStyle(activeColor)
 	case 3:
-		messagePanel.BorderStyle = ui.NewStyle(activeColor)
+		mf.ui.messagePanel.BorderStyle = ui.NewStyle(activeColor)
 
 	}
 
@@ -284,27 +287,27 @@ func run() {
 	// Activate Board Pane first
 	activePane = 1
 
-	messagePanel = widgets.NewList()
-	boardPanel = widgets.NewList()
-	threadPanel = widgets.NewList()
+	mf.ui.messagePanel = widgets.NewList()
+	mf.ui.boardPanel = widgets.NewList()
+	mf.ui.threadPanel = widgets.NewList()
 
-	messagePanel.WrapText = false
+	mf.ui.messagePanel.WrapText = false
 
 	loadForum()
 
-	boardPanel.WrapText = false
+	mf.ui.boardPanel.WrapText = false
 	colorize()
 
 	grid := ui.NewGrid()
 
 	grid.Set(
-		ui.NewRow(0.05, tabpane),
+		ui.NewRow(0.05, mf.ui.tabpane),
 		ui.NewRow(0.95,
 			ui.NewCol(1.0/2,
-				ui.NewRow(0.5, boardPanel),
-				ui.NewRow(0.5, threadPanel),
+				ui.NewRow(0.5, mf.ui.boardPanel),
+				ui.NewRow(0.5, mf.ui.threadPanel),
 			),
-			ui.NewCol(1.0/2, messagePanel),
+			ui.NewCol(1.0/2, mf.ui.messagePanel),
 		),
 	)
 
@@ -317,7 +320,7 @@ func run() {
 	initialize()
 
 	// Render initially
-	ui.Render(boardPanel, messagePanel, threadPanel, tabpane)
+	ui.Render(mf.ui.boardPanel, mf.ui.messagePanel, mf.ui.threadPanel, mf.ui.tabpane)
 
 	previousKey := ""
 	uiEvents := ui.PollEvents()
@@ -341,70 +344,70 @@ func run() {
 		case "q", "<C-c>":
 			return
 		case "?":
-			enrichedHelp, helpLinks := util.EnrichContent(helpPage, messagePanel.Inner.Dx())
+			enrichedHelp, helpLinks := util.EnrichContent(helpPage, mf.ui.messagePanel.Inner.Dx())
 			mf.active.message.Links = helpLinks
-			messagePanel.Rows = strings.Split(enrichedHelp, "\n")
+			mf.ui.messagePanel.Rows = strings.Split(enrichedHelp, "\n")
 		case "b":
 		case "<Left>":
-			tabpane.FocusLeft()
+			mf.ui.tabpane.FocusLeft()
 			ui.Clear()
 			initialize()
 		case "n":
 		case "<Right>":
-			tabpane.FocusRight()
+			mf.ui.tabpane.FocusRight()
 			ui.Clear()
 			initialize()
 		case "<MouseWheelDown>":
 			switch activePane {
 			case 1:
-				boardPanel.ScrollDown()
+				mf.ui.boardPanel.ScrollDown()
 			case 2:
-				threadPanel.ScrollDown()
+				mf.ui.threadPanel.ScrollDown()
 			case 3:
-				messagePanel.ScrollPageDown()
+				mf.ui.messagePanel.ScrollPageDown()
 			}
 		case "<Down>":
 			switch activePane {
 			case 1:
-				boardPanel.ScrollDown()
+				mf.ui.boardPanel.ScrollDown()
 				loadThread()
 			case 2:
-				threadPanel.ScrollDown()
+				mf.ui.threadPanel.ScrollDown()
 				loadMessage()
 			case 3:
-				messagePanel.ScrollPageDown()
+				mf.ui.messagePanel.ScrollPageDown()
 			}
 		case "<MouseWheelUp>":
 			switch activePane {
 			case 1:
-				boardPanel.ScrollUp()
+				mf.ui.boardPanel.ScrollUp()
 			case 2:
-				threadPanel.ScrollUp()
+				mf.ui.threadPanel.ScrollUp()
 			case 3:
-				messagePanel.ScrollPageUp()
+				mf.ui.messagePanel.ScrollPageUp()
 			}
 		case "<Up>":
 			switch activePane {
 			case 1:
-				boardPanel.ScrollUp()
+				mf.ui.boardPanel.ScrollUp()
 				loadThread()
 			case 2:
-				threadPanel.ScrollUp()
+				mf.ui.threadPanel.ScrollUp()
 				loadMessage()
 			case 3:
-				messagePanel.ScrollPageUp()
+				mf.ui.messagePanel.ScrollPageUp()
 			}
 		case "J", "z":
-			boardPanel.ScrollDown()
+			mf.ui.boardPanel.ScrollDown()
 			loadThread()
 		case "K":
-			boardPanel.ScrollUp()
+			mf.ui.boardPanel.ScrollUp()
 			loadThread()
 		case "j":
-			threadPanel.ScrollDown()
+			mf.ui.threadPanel.ScrollDown()
 			loadMessage()
 		case "k":
-			threadPanel.ScrollUp()
+			mf.ui.threadPanel.ScrollUp()
 			loadMessage()
 		case "u":
 			selectNextUnreadMessage()
@@ -412,39 +415,39 @@ func run() {
 		case "<Enter>":
 			loadThread()
 		case "<C-d>":
-			boardPanel.ScrollHalfPageDown()
+			mf.ui.boardPanel.ScrollHalfPageDown()
 		case "<C-u>":
-			boardPanel.ScrollHalfPageUp()
+			mf.ui.boardPanel.ScrollHalfPageUp()
 		case "<C-f>":
-			boardPanel.ScrollPageDown()
+			mf.ui.boardPanel.ScrollPageDown()
 		case "<C-b>":
-			boardPanel.ScrollPageUp()
+			mf.ui.boardPanel.ScrollPageUp()
 		case "g":
 			if previousKey == "g" {
-				boardPanel.ScrollTop()
+				mf.ui.boardPanel.ScrollTop()
 			}
 		case "<Home>":
-			boardPanel.ScrollTop()
+			mf.ui.boardPanel.ScrollTop()
 		case "G", "<End>":
-			boardPanel.ScrollBottom()
+			mf.ui.boardPanel.ScrollBottom()
 		case "<Resize>":
 			termWidth, termHeight := ui.TerminalDimensions()
 			grid.SetRect(0, 0, termWidth, termHeight)
 			ui.Clear()
 		case "<MouseLeft>":
 
-			if handleMouseClickEventOnTabBar(e, tabpane) {
+			if handleMouseClickEventOnTabBar(e, mf.ui.tabpane) {
 				loadBoard()
 				activePane = 0
 				ui.Clear()
 				initialize()
-			} else if handleMouseClickEventOnList(e, boardPanel) {
+			} else if handleMouseClickEventOnList(e, mf.ui.boardPanel) {
 				loadThread()
 				activePane = 1
-			} else if handleMouseClickEventOnList(e, threadPanel) {
+			} else if handleMouseClickEventOnList(e, mf.ui.threadPanel) {
 				loadMessage()
 				activePane = 2
-			} else if handleMouseClickEventOnList(e, messagePanel) {
+			} else if handleMouseClickEventOnList(e, mf.ui.messagePanel) {
 				activePane = 3
 			}
 
@@ -458,7 +461,7 @@ func run() {
 			previousKey = e.ID
 		}
 
-		ui.Render(boardPanel, messagePanel, threadPanel, tabpane)
+		ui.Render(mf.ui.boardPanel, mf.ui.messagePanel, mf.ui.threadPanel, mf.ui.tabpane)
 	}
 }
 
