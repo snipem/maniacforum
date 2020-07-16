@@ -68,4 +68,3 @@ Zum Beispiel für den Sync über Dropbox: `MANIACFORUM_READLOG_FILE="$HOME/dropb
 ### Known Bugs
 
 * Flicker on initial load
-* keypress a bei main thread führt zu absturz
