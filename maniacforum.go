@@ -21,10 +21,18 @@ import (
 
 // Forum > Board > Threads > Message
 
-// TODO Get rid of global variables
-var activeThreads board.Thread
-var activeBoard board.Board
-var activeForum board.Forum
+// maniacforum ...
+type maniacforum struct {
+	active content
+}
+
+type content struct {
+	threads board.Thread
+	board   board.Board
+	forum   board.Forum
+}
+
+var mf maniacforum
 
 var threadPanel *widgets.List
 var messagePanel *widgets.List
@@ -70,9 +78,9 @@ Globale Steuerung
 `
 
 func loadBoard() {
-	boardID := activeForum.Boards[tabpane.ActiveTabIndex].ID
-	activeBoard = board.GetBoard(boardID)
-	threads = activeBoard.Threads
+	boardID := mf.active.forum.Boards[tabpane.ActiveTabIndex].ID
+	mf.active.board = board.GetBoard(boardID)
+	threads = mf.active.board.Threads
 
 	// Clear board panel
 	boardPanel.Rows = nil
@@ -94,16 +102,16 @@ func loadBoard() {
 }
 
 func loadMessage() {
-	if len(activeThreads.Messages) > 0 {
+	if len(mf.active.threads.Messages) > 0 {
 		start := time.Now()
-		message = board.GetMessage(activeThreads.Messages[threadPanel.SelectedRow].Link)
+		message = board.GetMessage(mf.active.threads.Messages[threadPanel.SelectedRow].Link)
 
 		message.EnrichedContent, message.Links = util.EnrichContent(message.Content, messagePanel.Inner.Dx())
 		messagePanel.Rows = strings.Split(message.EnrichedContent, "\n")
 		messagePanel.ScrollTop()
 
 		// TODO Copy these two commands into function
-		activeThreads.Messages[threadPanel.SelectedRow].Read = true
+		mf.active.threads.Messages[threadPanel.SelectedRow].Read = true
 		board.SetMessageAsRead(message.ID)
 
 		board.Logger.Printf("loading message %s by '%s' took %s", message.ID, message.Author.Name, time.Since(start))
@@ -114,11 +122,11 @@ func loadMessage() {
 		fetchAheadMessages := 2
 
 		// Get the next two messages for the cache, ignore them for now, but make them available for the cache
-		if len(activeThreads.Messages) > threadPanel.SelectedRow+fetchAheadMessages {
+		if len(mf.active.threads.Messages) > threadPanel.SelectedRow+fetchAheadMessages {
 			for i := 1; i <= fetchAheadMessages; i++ {
 				// Go routine will run in background even if function finishes. The actual message is returned
 				// and the content of the fetch ahead messages is stored into the cache
-				go board.GetMessage(activeThreads.Messages[threadPanel.SelectedRow+i].Link)
+				go board.GetMessage(mf.active.threads.Messages[threadPanel.SelectedRow+i].Link)
 			}
 		}
 	}
@@ -129,8 +137,8 @@ func loadMessage() {
 
 // selectNextUnreadMessage selects the next unread message in the current thread
 func selectNextUnreadMessage() {
-	for i := threadPanel.SelectedRow + 1; i < len(activeThreads.Messages); i++ {
-		if !activeThreads.Messages[i].Read {
+	for i := threadPanel.SelectedRow + 1; i < len(mf.active.threads.Messages); i++ {
+		if !mf.active.threads.Messages[i].Read {
 			threadPanel.SelectedRow = i
 			return
 		}
@@ -139,20 +147,20 @@ func selectNextUnreadMessage() {
 
 // answerMessage uses the default system browser to open the answerMessage link of the currently selected message
 func answerMessage() {
-	answerURL := board.BoardURL + "pxmboard.php?mode=messageform&brdid=" + activeBoard.ID + "&msgid=" + message.ID
+	answerURL := board.BoardURL + "pxmboard.php?mode=messageform&brdid=" + mf.active.board.ID + "&msgid=" + message.ID
 	open.Run(answerURL)
 }
 
 // openMessage uses the default system browser to open currently selected message
 func openMessage() {
-	answerURL := board.BoardURL + "pxmboard.php?mode=message&brdid=" + activeBoard.ID + "&msgid=" + message.ID
+	answerURL := board.BoardURL + "pxmboard.php?mode=message&brdid=" + mf.active.board.ID + "&msgid=" + message.ID
 	open.Run(answerURL)
 }
 
 // loadThread loads selected thread from board and displays the first message
 func loadThread() {
 	message = board.GetMessage(threads[boardPanel.SelectedRow].Link)
-	activeThreads = board.GetThread(threads[boardPanel.SelectedRow].ID, activeBoard.ID)
+	mf.active.threads = board.GetThread(threads[boardPanel.SelectedRow].ID, mf.active.board.ID)
 	threadPanel.SelectedRow = 0
 
 	renderThread()
@@ -162,11 +170,11 @@ func loadThread() {
 	fetchAheadThreads := 2
 
 	// Get the next two messages for the cache, ignore them for now, but make them available for the cache
-	if len(activeBoard.Threads) >= boardPanel.SelectedRow+fetchAheadThreads {
+	if len(mf.active.board.Threads) >= boardPanel.SelectedRow+fetchAheadThreads {
 		for i := 1; i <= fetchAheadThreads; i++ {
 			// Go routine will run in background even if function finishes. The actual message is returned
 			// and the content of the fetch ahead messages is stored into the cache
-			go board.GetThread(activeBoard.Threads[boardPanel.SelectedRow+i].ID, activeBoard.ID)
+			go board.GetThread(mf.active.board.Threads[boardPanel.SelectedRow+i].ID, mf.active.board.ID)
 		}
 	}
 }
@@ -176,7 +184,7 @@ func renderThread() {
 	threadPanel.Rows = nil
 
 	// Clear thread panel
-	for _, m := range activeThreads.Messages {
+	for _, m := range mf.active.threads.Messages {
 		messageColor := "red"
 
 		if m.Read {
@@ -211,10 +219,10 @@ func openLink(nr int) error {
 }
 
 func loadForum() {
-	activeForum = board.GetForum()
+	mf.active.forum = board.GetForum()
 	var boardNames []string
 
-	for _, thread := range activeForum.Boards {
+	for _, thread := range mf.active.forum.Boards {
 		boardNames = append(boardNames, thread.Title)
 	}
 
