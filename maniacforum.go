@@ -113,7 +113,7 @@ func loadMessage() {
 		fetchAheadMessages := 2
 
 		// Get the next two messages for the cache, ignore them for now, but make them available for the cache
-		if len(activeThreads.Messages) >= threadPanel.SelectedRow+fetchAheadMessages {
+		if len(activeThreads.Messages) > threadPanel.SelectedRow+fetchAheadMessages {
 			for i := 1; i <= fetchAheadMessages; i++ {
 				// Go routine will run in background even if function finishes. The actual message is returned
 				// and the content of the fetch ahead messages is stored into the cache
