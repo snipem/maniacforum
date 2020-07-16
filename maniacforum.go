@@ -348,7 +348,14 @@ func run() {
 			ui.Clear()
 			initialize()
 		case "<MouseWheelDown>":
-			messagePanel.ScrollPageDown()
+			switch activePane {
+			case 1:
+				boardPanel.ScrollDown()
+			case 2:
+				threadPanel.ScrollDown()
+			case 3:
+				messagePanel.ScrollPageDown()
+			}
 		case "<Down>":
 			switch activePane {
 			case 1:
@@ -361,7 +368,14 @@ func run() {
 				messagePanel.ScrollPageDown()
 			}
 		case "<MouseWheelUp>":
-			messagePanel.ScrollPageUp()
+			switch activePane {
+			case 1:
+				boardPanel.ScrollUp()
+			case 2:
+				threadPanel.ScrollUp()
+			case 3:
+				messagePanel.ScrollPageUp()
+			}
 		case "<Up>":
 			switch activePane {
 			case 1:
@@ -423,7 +437,10 @@ func run() {
 			} else if handleMouseClickEventOnList(e, threadPanel) {
 				loadMessage()
 				activePane = 2
+			} else if handleMouseClickEventOnList(e, messagePanel) {
+				activePane = 3
 			}
+
 			colorize()
 
 		}
