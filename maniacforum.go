@@ -32,6 +32,12 @@ type maniacforumModel struct {
 	board   board.Board
 	forum   board.Forum
 	message board.Message
+	state   maniacforumState
+}
+
+type maniacforumState struct {
+	activePane int
+	maxPane    int
 }
 
 type uiContent struct {
@@ -41,13 +47,7 @@ type uiContent struct {
 	tabpane      *widgets.TabPane
 }
 
-var mf maniacforum
-
-var activePane int
-var maxPane = 3
-
 var version = "dev"
-
 var helpPage = `maniacforum ` + version + `
 
 Hilfe
@@ -78,7 +78,7 @@ Globale Steuerung
 [https://github.com/snipem/maniacforum]
 `
 
-func loadBoard() {
+func (mf *maniacforum) loadBoard() {
 	boardID := mf.active.forum.Boards[mf.ui.tabpane.ActiveTabIndex].ID
 	mf.active.board = board.GetBoard(boardID)
 	// threads = mf.active.board.Threads
@@ -102,7 +102,7 @@ func loadBoard() {
 	}
 }
 
-func loadMessage() {
+func (mf *maniacforum) loadMessage() {
 	if len(mf.active.threads.Messages) > 0 {
 		start := time.Now()
 		mf.active.message = board.GetMessage(mf.active.threads.Messages[mf.ui.threadPanel.SelectedRow].Link)
@@ -133,11 +133,11 @@ func loadMessage() {
 	}
 
 	// Render thread for read messages
-	renderThread()
+	mf.renderThread()
 }
 
 // selectNextUnreadMessage selects the next unread message in the current thread
-func selectNextUnreadMessage() {
+func (mf *maniacforum) selectNextUnreadMessage() {
 	for i := mf.ui.threadPanel.SelectedRow + 1; i < len(mf.active.threads.Messages); i++ {
 		if !mf.active.threads.Messages[i].Read {
 			mf.ui.threadPanel.SelectedRow = i
@@ -147,25 +147,25 @@ func selectNextUnreadMessage() {
 }
 
 // answerMessage uses the default system browser to open the answerMessage link of the currently selected message
-func answerMessage() {
+func (mf *maniacforum) answerMessage() {
 	answerURL := board.BoardURL + "pxmboard.php?mode=messageform&brdid=" + mf.active.board.ID + "&msgid=" + mf.active.message.ID
 	open.Run(answerURL)
 }
 
 // openMessage uses the default system browser to open currently selected message
-func openMessage() {
+func (mf *maniacforum) openMessage() {
 	answerURL := board.BoardURL + "pxmboard.php?mode=message&brdid=" + mf.active.board.ID + "&msgid=" + mf.active.message.ID
 	open.Run(answerURL)
 }
 
 // loadThread loads selected thread from board and displays the first message
-func loadThread() {
+func (mf *maniacforum) loadThread() {
 	// FIXME this logic with Threads and threads seems illogic
 	mf.active.message = board.GetMessage(mf.active.board.Threads[mf.ui.boardPanel.SelectedRow].Link)
 	mf.active.threads = board.GetThread(mf.active.board.Threads[mf.ui.boardPanel.SelectedRow].ID, mf.active.board.ID)
 	mf.ui.threadPanel.SelectedRow = 0
 
-	renderThread()
+	mf.renderThread()
 
 	mf.ui.messagePanel.ScrollTop()
 
@@ -181,7 +181,7 @@ func loadThread() {
 	}
 }
 
-func renderThread() {
+func (mf *maniacforum) renderThread() {
 
 	mf.ui.threadPanel.Rows = nil
 
@@ -205,7 +205,7 @@ func renderThread() {
 }
 
 // openLinks opens a link in the displayed message with the default system browser
-func openLink(nr int) error {
+func (mf *maniacforum) openLink(nr int) error {
 	if nr > len(mf.active.message.Links) {
 		return fmt.Errorf("No link with number %d in message", nr)
 	}
@@ -220,7 +220,7 @@ func openLink(nr int) error {
 	return nil
 }
 
-func loadForum() {
+func (mf *maniacforum) loadForum() {
 	mf.active.forum = board.GetForum()
 	var boardNames []string
 
@@ -234,14 +234,15 @@ func loadForum() {
 	mf.ui.tabpane.ActiveTabIndex = 0
 }
 
-func initialize() {
+func (mf *maniacforum) initialize() {
 	// Initialize
-	loadBoard()
-	loadThread()
+	mf.active.state.maxPane = 3
+	mf.loadBoard()
+	mf.loadThread()
 }
 
 // colorize the ui depending on the active pane
-func colorize() {
+func (mf *maniacforum) colorize() {
 	inactiveColor := ui.ColorWhite
 	activeColor := ui.ColorRed
 
@@ -254,7 +255,7 @@ func colorize() {
 	mf.ui.tabpane.BorderStyle = ui.NewStyle(inactiveColor)
 	mf.ui.messagePanel.BorderStyle = ui.NewStyle(inactiveColor)
 
-	switch activePane {
+	switch mf.active.state.activePane {
 	case 1:
 		mf.ui.boardPanel.TextStyle = ui.NewStyle(activeColor)
 		mf.ui.boardPanel.BorderStyle = ui.NewStyle(activeColor)
@@ -279,13 +280,15 @@ func run() {
 		os.Exit(0)
 	}
 
+	var mf maniacforum
+
 	if err := ui.Init(); err != nil {
 		log.Fatalf("failed to initialize termui: %v", err)
 	}
 	defer ui.Close()
 
 	// Activate Board Pane first
-	activePane = 1
+	mf.active.state.activePane = 1
 
 	mf.ui.messagePanel = widgets.NewList()
 	mf.ui.boardPanel = widgets.NewList()
@@ -293,10 +296,10 @@ func run() {
 
 	mf.ui.messagePanel.WrapText = false
 
-	loadForum()
+	mf.loadForum()
 
 	mf.ui.boardPanel.WrapText = false
-	colorize()
+	mf.colorize()
 
 	grid := ui.NewGrid()
 
@@ -317,7 +320,7 @@ func run() {
 	// UI has to be rendered to determine sizes for wrapping, this will
 	// show an empty UI before the initialize function is called
 	ui.Render(grid)
-	initialize()
+	mf.initialize()
 
 	// Render initially
 	ui.Render(mf.ui.boardPanel, mf.ui.messagePanel, mf.ui.threadPanel, mf.ui.tabpane)
@@ -328,19 +331,19 @@ func run() {
 		e := <-uiEvents
 		switch e.ID {
 		case "<Tab>":
-			if activePane < maxPane {
-				activePane++
+			if mf.active.state.activePane < mf.active.state.maxPane {
+				mf.active.state.activePane++
 			} else {
-				activePane = 1
+				mf.active.state.activePane = 1
 			}
-			colorize()
+			mf.colorize()
 		case "1", "2", "3", "4", "5", "6", "7", "8", "9", "0":
 			linkNr, _ := strconv.Atoi(e.ID)
-			openLink(linkNr)
+			mf.openLink(linkNr)
 		case "a":
-			answerMessage()
+			mf.answerMessage()
 		case "e":
-			openMessage()
+			mf.openMessage()
 		case "q", "<C-c>":
 			return
 		case "?":
@@ -351,14 +354,14 @@ func run() {
 		case "<Left>":
 			mf.ui.tabpane.FocusLeft()
 			ui.Clear()
-			initialize()
+			mf.initialize()
 		case "n":
 		case "<Right>":
 			mf.ui.tabpane.FocusRight()
 			ui.Clear()
-			initialize()
+			mf.initialize()
 		case "<MouseWheelDown>":
-			switch activePane {
+			switch mf.active.state.activePane {
 			case 1:
 				mf.ui.boardPanel.ScrollDown()
 			case 2:
@@ -367,18 +370,18 @@ func run() {
 				mf.ui.messagePanel.ScrollPageDown()
 			}
 		case "<Down>":
-			switch activePane {
+			switch mf.active.state.activePane {
 			case 1:
 				mf.ui.boardPanel.ScrollDown()
-				loadThread()
+				mf.loadThread()
 			case 2:
 				mf.ui.threadPanel.ScrollDown()
-				loadMessage()
+				mf.loadMessage()
 			case 3:
 				mf.ui.messagePanel.ScrollPageDown()
 			}
 		case "<MouseWheelUp>":
-			switch activePane {
+			switch mf.active.state.activePane {
 			case 1:
 				mf.ui.boardPanel.ScrollUp()
 			case 2:
@@ -387,33 +390,33 @@ func run() {
 				mf.ui.messagePanel.ScrollPageUp()
 			}
 		case "<Up>":
-			switch activePane {
+			switch mf.active.state.activePane {
 			case 1:
 				mf.ui.boardPanel.ScrollUp()
-				loadThread()
+				mf.loadThread()
 			case 2:
 				mf.ui.threadPanel.ScrollUp()
-				loadMessage()
+				mf.loadMessage()
 			case 3:
 				mf.ui.messagePanel.ScrollPageUp()
 			}
 		case "J", "z":
 			mf.ui.boardPanel.ScrollDown()
-			loadThread()
+			mf.loadThread()
 		case "K":
 			mf.ui.boardPanel.ScrollUp()
-			loadThread()
+			mf.loadThread()
 		case "j":
 			mf.ui.threadPanel.ScrollDown()
-			loadMessage()
+			mf.loadMessage()
 		case "k":
 			mf.ui.threadPanel.ScrollUp()
-			loadMessage()
+			mf.loadMessage()
 		case "u":
-			selectNextUnreadMessage()
-			loadMessage()
+			mf.selectNextUnreadMessage()
+			mf.loadMessage()
 		case "<Enter>":
-			loadThread()
+			mf.loadThread()
 		case "<C-d>":
 			mf.ui.boardPanel.ScrollHalfPageDown()
 		case "<C-u>":
@@ -437,21 +440,21 @@ func run() {
 		case "<MouseLeft>":
 
 			if handleMouseClickEventOnTabBar(e, mf.ui.tabpane) {
-				loadBoard()
-				activePane = 0
+				mf.loadBoard()
+				mf.active.state.activePane = 0
 				ui.Clear()
-				initialize()
+				mf.initialize()
 			} else if handleMouseClickEventOnList(e, mf.ui.boardPanel) {
-				loadThread()
-				activePane = 1
+				mf.loadThread()
+				mf.active.state.activePane = 1
 			} else if handleMouseClickEventOnList(e, mf.ui.threadPanel) {
-				loadMessage()
-				activePane = 2
+				mf.loadMessage()
+				mf.active.state.activePane = 2
 			} else if handleMouseClickEventOnList(e, mf.ui.messagePanel) {
-				activePane = 3
+				mf.active.state.activePane = 3
 			}
 
-			colorize()
+			mf.colorize()
 
 		}
 
