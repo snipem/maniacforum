@@ -4,6 +4,9 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	ui "github.com/gizak/termui/v3"
+	"github.com/gizak/termui/v3/widgets"
 )
 
 // EnrichContent enriches links in content with numbers, returns enriched content and list of links
@@ -64,4 +67,44 @@ func wrapLine(unwrapped string, wrapAt int) []string {
 	}
 
 	return wrapped
+}
+
+// HandleMouseClickEventOnTabBar returns true if the TabPane has been clicked, and sets the
+// ActiveTabIndex of the TabPane to the tab clicked
+func HandleMouseClickEventOnTabBar(e ui.Event, bar *widgets.TabPane) bool {
+	payload := e.Payload.(ui.Mouse)
+	x0, y0 := bar.Inner.Min.X, bar.Inner.Min.Y
+	x1, y1 := bar.Inner.Max.X, bar.Inner.Max.Y
+	if x0 <= payload.X && payload.X <= x1 && y0 <= payload.Y && payload.Y <= y1 {
+
+		// Calculate clicked tab by splitting up the whole string bar "Smalltalk | For Sale | ... "
+		// at the Y position of the mouse event. The number of | in the resulting string will reflect
+		// the clicked tab
+		wholeTabBarString := strings.Join(bar.TabNames, " | ")
+		tabNrClicked := strings.Count(wholeTabBarString[0:payload.X], "|")
+
+		bar.ActiveTabIndex = tabNrClicked
+		return true
+	}
+	return false
+}
+
+// HandleMouseClickEventOnList returns true if the list has been clicked and set's the active
+// element of the list to the element clicked.
+func HandleMouseClickEventOnList(e ui.Event, list *widgets.List) bool {
+
+	payload := e.Payload.(ui.Mouse)
+
+	border := 0
+	if list.BorderTop {
+		border = 1
+	}
+	x0, y0 := list.Inner.Min.X, list.Inner.Min.Y
+	x1, y1 := list.Inner.Max.X, list.Inner.Max.Y
+	if x0 <= payload.X && payload.X <= x1 && y0 <= payload.Y && payload.Y <= y1 {
+		list.SelectedRow = payload.Y - list.Rectangle.Min.Y - border + list.TopRow
+		return true
+	}
+	return false
+
 }

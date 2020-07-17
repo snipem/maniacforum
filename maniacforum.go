@@ -439,18 +439,18 @@ func run() {
 			ui.Clear()
 		case "<MouseLeft>":
 
-			if handleMouseClickEventOnTabBar(e, mf.ui.tabpane) {
+			if util.HandleMouseClickEventOnTabBar(e, mf.ui.tabpane) {
 				mf.loadBoard()
 				mf.active.state.activePane = 0
 				ui.Clear()
 				mf.initialize()
-			} else if handleMouseClickEventOnList(e, mf.ui.boardPanel) {
+			} else if util.HandleMouseClickEventOnList(e, mf.ui.boardPanel) {
 				mf.loadThread()
 				mf.active.state.activePane = 1
-			} else if handleMouseClickEventOnList(e, mf.ui.threadPanel) {
+			} else if util.HandleMouseClickEventOnList(e, mf.ui.threadPanel) {
 				mf.loadMessage()
 				mf.active.state.activePane = 2
-			} else if handleMouseClickEventOnList(e, mf.ui.messagePanel) {
+			} else if util.HandleMouseClickEventOnList(e, mf.ui.messagePanel) {
 				mf.active.state.activePane = 3
 			}
 
@@ -466,40 +466,4 @@ func run() {
 
 		ui.Render(mf.ui.boardPanel, mf.ui.messagePanel, mf.ui.threadPanel, mf.ui.tabpane)
 	}
-}
-
-func handleMouseClickEventOnTabBar(e ui.Event, bar *widgets.TabPane) bool {
-	payload := e.Payload.(ui.Mouse)
-	x0, y0 := bar.Inner.Min.X, bar.Inner.Min.Y
-	x1, y1 := bar.Inner.Max.X, bar.Inner.Max.Y
-	if x0 <= payload.X && payload.X <= x1 && y0 <= payload.Y && payload.Y <= y1 {
-
-		// Calculate clicked tab by splitting up the whole string bar "Smalltalk | For Sale | ... "
-		// at the Y position of the mouse event. The number of | in the resulting string will reflect
-		// the clicked tab
-		wholeTabBarString := strings.Join(bar.TabNames, " | ")
-		tabNrClicked := strings.Count(wholeTabBarString[0:payload.X], "|")
-
-		bar.ActiveTabIndex = tabNrClicked
-		return true
-	}
-	return false
-}
-
-func handleMouseClickEventOnList(e ui.Event, list *widgets.List) bool {
-
-	payload := e.Payload.(ui.Mouse)
-
-	border := 0
-	if list.BorderTop {
-		border = 1
-	}
-	x0, y0 := list.Inner.Min.X, list.Inner.Min.Y
-	x1, y1 := list.Inner.Max.X, list.Inner.Max.Y
-	if x0 <= payload.X && payload.X <= x1 && y0 <= payload.Y && payload.Y <= y1 {
-		list.SelectedRow = payload.Y - list.Rectangle.Min.Y - border + list.TopRow
-		return true
-	}
-	return false
-
 }
