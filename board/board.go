@@ -300,7 +300,7 @@ func httpPost(url string, data url.Values) string {
 
 // searchMessages returns the list of matching messages from the new search of the forum
 // boardID = -1 will search every forum as for the documentation of the service
-func searchMessages(query string, authorName string, boardId string, searchInBody bool, searchInTopic bool) []Message {
+func searchMessages(query string, authorName string, boardID string, searchInBody bool, searchInTopic bool) []Message {
 
 	cbxBody := "0"
 	cbxSubject := "0"
@@ -316,7 +316,7 @@ func searchMessages(query string, authorName string, boardId string, searchInBod
 	body := httpPost(BoardURL+"search/search.php", url.Values{
 		"phrase":     {query},
 		"autor":      {authorName},
-		"board":      {boardId},
+		"board":      {boardID},
 		"cbxBody":    {cbxBody},
 		"cbxSubject": {cbxSubject},
 		"suche":      {"durchsuchen"},
