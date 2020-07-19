@@ -299,6 +299,7 @@ func httpPost(url string, data url.Values) string {
 }
 
 // searchMessages returns the list of matching messages from the new search of the forum
+// boardID = -1 will search every forum as for the documentation of the service
 func searchMessages(query string, authorName string, boardId string, searchInBody bool, searchInTopic bool) []Message {
 
 	cbxBody := "0"
@@ -343,8 +344,11 @@ func searchMessages(query string, authorName string, boardId string, searchInBod
 	})
 
 	// Second run for getting the non HTML encapsulated author names and dates
-	matchesString := strings.Split(body, "Matches:")[1]
-	matches := strings.Split(matchesString, "<br>")
+	splittedResults := strings.Split(body, "Matches:")
+	if len(splittedResults) != 2 {
+		return messages
+	}
+	matches := strings.Split(splittedResults[1], "<br>")
 
 	re := regexp.MustCompile("von: (.*) , (.*)")
 	for i := 0; i < len(matches)-1; i++ {

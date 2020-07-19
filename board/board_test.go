@@ -75,9 +75,19 @@ func TestSearch(t *testing.T) {
 
 	query := "Maniacforum Demake"
 	authorName := "snimat"
-	messages := searchMessages(query, authorName, "OT", false, true)
+	messages := searchMessages(query, authorName, "-1", false, true)
 
-	assert.GreaterOrEqual(t, len(messages), 0)
+	assert.Greater(t, len(messages), 0)
 	assert.Equal(t, messages[0].Author.Name, authorName)
+
+}
+
+func TestSearchEmptyResult(t *testing.T) {
+
+	query := "Query for user that hopefully will never exist"
+	authorName := "hopefully this user will never exist"
+	messages := searchMessages(query, authorName, "-1", false, true)
+
+	assert.Equal(t, len(messages), 0)
 
 }
