@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/patrickmn/go-cache"
+	"github.com/snipem/maniacforum/util"
 
 	"net/url"
 
@@ -39,6 +40,7 @@ type Thread struct {
 	LastAnswerDate string
 	LastAnswerLink string
 	Messages       []Message
+	Board          *Board
 }
 
 // Message contains information about a Maniac Forum Message. Single response to a Thread.
@@ -53,6 +55,8 @@ type Message struct {
 	Hierarchy       int
 	Author          User
 	Read            bool
+	Thread          *Thread
+	Board           *Board
 }
 
 // Board in forum, like Smalltalk, O/T, etc.
@@ -231,7 +235,7 @@ func getDoc(resource string) *goquery.Document {
 	if useCache && foundInCache { // Use cached resource if cache is used
 		body = cachedBody.(string)
 	} else { // Fetch resource if not in cache
-		body = httpFetch(url)
+		body = httpGet(url)
 		c.Set(url, body, cache.DefaultExpiration)
 	}
 
@@ -244,8 +248,8 @@ func getDoc(resource string) *goquery.Document {
 
 }
 
-// httpFetch fetches the content of a url and returns the body of the response
-func httpFetch(url string) string {
+// httpGet fetches the content of a url and returns the body of the response
+func httpGet(url string) string {
 
 	client := &http.Client{}
 
@@ -266,6 +270,95 @@ func httpFetch(url string) string {
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(res.Body)
 	return buf.String()
+}
+
+// httpPost posts the data to a url and returns the body of the response
+func httpPost(url string, data url.Values) string {
+
+	client := &http.Client{}
+
+	Logger.Printf("Fetching %s", strings.Replace(url, BoardURL, "", 1))
+
+	// TODO Use User Agent
+	// req, err := http.NewRequest("POST", url, nil)
+	// req.Header.Add("User-Agent", "maniacforum-cli")
+	// req.PostForm = data
+	res, err := client.PostForm(url, data)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer res.Body.Close()
+	if res.StatusCode != 200 {
+		log.Fatalf("status code error: %d %s", res.StatusCode, res.Status)
+	}
+
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(res.Body)
+	return buf.String()
+}
+
+// searchMessages returns the list of matching messages from the new search of the forum
+func searchMessages(query string, authorName string, boardId string, searchInBody bool, searchInTopic bool) []Message {
+
+	cbxBody := "0"
+	cbxSubject := "0"
+
+	if searchInBody {
+		cbxBody = "1"
+	}
+
+	if searchInTopic {
+		cbxSubject = "1"
+	}
+
+	body := httpPost(BoardURL+"search/search.php", url.Values{
+		"phrase":     {query},
+		"autor":      {authorName},
+		"board":      {boardId},
+		"cbxBody":    {cbxBody},
+		"cbxSubject": {cbxSubject},
+		"suche":      {"durchsuchen"},
+	})
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(body))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var messages []Message
+
+	// First run for getting topic name and link
+	doc.Find("a").Each(func(i int, s *goquery.Selection) {
+		var m Message
+
+		m.Topic = s.Text()
+		m.Link, _ = s.Attr("href")
+
+		m.Board = &Board{}
+		m.Thread = &Thread{}
+
+		m.Board.ID, m.Thread.ID, m.ID = util.ExtractIDsFromLink(m.Link)
+
+		messages = append(messages, m)
+	})
+
+	// Second run for getting the non HTML encapsulated author names and dates
+	matchesString := strings.Split(body, "Matches:")[1]
+	matches := strings.Split(matchesString, "<br>")
+
+	re := regexp.MustCompile("von: (.*) , (.*)")
+	for i := 0; i < len(matches)-1; i++ {
+
+		// Results start at second <br>, add 1 to index
+		match := re.FindStringSubmatch(matches[i+1])
+		if len(match) == 3 {
+			messages[i].Author.Name = match[1]
+			messages[i].Date = match[2]
+		}
+
+	}
+
+	return messages
 }
 
 // GetForum retuns the forum

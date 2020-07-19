@@ -70,3 +70,14 @@ func TestMessage(t *testing.T) {
 
 	assert.Equal(t, "4377586", message.ID)
 }
+
+func TestSearch(t *testing.T) {
+
+	query := "Maniacforum Demake"
+	authorName := "snimat"
+	messages := searchMessages(query, authorName, "OT", false, true)
+
+	assert.GreaterOrEqual(t, len(messages), 0)
+	assert.Equal(t, messages[0].Author.Name, authorName)
+
+}
