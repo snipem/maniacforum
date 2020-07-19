@@ -350,11 +350,13 @@ func searchMessages(query string, authorName string, boardId string, searchInBod
 	}
 	matches := strings.Split(splittedResults[1], "<br>")
 
-	re := regexp.MustCompile("von: (.*) , (.*)")
-	for i := 0; i < len(matches)-1; i++ {
+	// Results start at second <br> ignore first
+	matches = matches[1:]
 
-		// Results start at second <br>, add 1 to index
-		match := re.FindStringSubmatch(matches[i+1])
+	re := regexp.MustCompile("von: (.*) , (.*)")
+	for i := 0; i < len(matches); i++ {
+
+		match := re.FindStringSubmatch(matches[i])
 		if len(match) == 3 {
 			messages[i].Author.Name = match[1]
 			messages[i].Date = match[2]
