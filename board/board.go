@@ -247,8 +247,13 @@ func getDoc(resource string) *goquery.Document {
 // httpFetch fetches the content of a url and returns the body of the response
 func httpFetch(url string) string {
 
+	client := &http.Client{}
+
 	Logger.Printf("Fetching %s", strings.Replace(url, BoardURL, "", 1))
-	res, err := http.Get(url)
+
+	req, err := http.NewRequest("GET", url, nil)
+	req.Header.Add("User-Agent", "maniacforum-cli")
+	res, err := client.Do(req)
 
 	if err != nil {
 		log.Fatal(err)
