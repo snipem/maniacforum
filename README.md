@@ -68,3 +68,4 @@ Zum Beispiel für den Sync über Dropbox: `MANIACFORUM_READLOG_FILE="$HOME/dropb
 ### Known Bugs
 
 * Flicker on initial load
+* Resize does not work
