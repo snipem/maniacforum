@@ -371,7 +371,7 @@ func searchMessages(query string, authorName string, boardID string, searchInBod
 	return messages
 }
 
-// GetForum retuns the forum
+// GetForum returns the forum
 func GetForum() Forum {
 
 	mainPage := getDoc("pxmboard.php")
