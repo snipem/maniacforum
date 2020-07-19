@@ -333,7 +333,11 @@ func searchMessages(query string, authorName string, boardID string, searchInBod
 		var m Message
 
 		m.Topic = s.Text()
-		m.Link, _ = s.Attr("href")
+		var exists bool
+		m.Link, exists = s.Attr("href")
+		if !exists {
+			log.Fatal("Can't extract links from search")
+		}
 
 		m.Board = &Board{}
 		m.Thread = &Thread{}
