@@ -83,20 +83,19 @@ func init() {
 	c = cache.New(5*time.Minute, 10*time.Minute)
 	readLogfile = getReadLogFilePath()
 
-	f, err := os.OpenFile("maniacforum.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	logfile := "/dev/null"
+	if _, ok := os.LookupEnv("MANIACFORUM_DEBUG"); ok {
+		logfile = "maniacforum.log"
+	}
+
+	f, err := os.OpenFile(logfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Println(err)
 	}
-	// TODO how to safely handle file?
+	// TODO how to safely handle file? If activated log is not written
 	// defer f.Close()
 
 	Logger = log.New(f, "board.go ", log.LstdFlags)
-
-	if _, ok := os.LookupEnv("MANIACFORUM_DEBUG"); ok {
-	} else {
-		Logger.SetOutput(ioutil.Discard)
-	}
-
 }
 
 // getReadLogFilePath from env var or default .config file path
