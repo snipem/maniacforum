@@ -337,6 +337,15 @@ func run() {
 				mf.active.state.activePane = 1
 			}
 			mf.colorize()
+		case "Z": // <S-Tab> is rendered as <Escape>[Z, just check for [Z for now
+			if previousKey == "[" {
+				if mf.active.state.activePane > 1 {
+					mf.active.state.activePane--
+				} else {
+					mf.active.state.activePane = mf.active.state.maxPane
+				}
+				mf.colorize()
+			}
 		case "1", "2", "3", "4", "5", "6", "7", "8", "9", "0":
 			linkNr, _ := strconv.Atoi(e.ID)
 			mf.openLink(linkNr)
