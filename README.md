@@ -45,8 +45,8 @@ Zum Beispiel für den Sync über Dropbox: `MANIACFORUM_READLOG_FILE="$HOME/dropb
 
 #### Open
 
-* Native posting without browser - deli-
-* Boss key - Stitch
+* Native posting without browser - deli-: Unlikely UI framework does not support it.
+* Boss key - Stitch: <Ctrl-Z>
 
 #### Done
 
