@@ -445,7 +445,7 @@ func run() {
 		case "<Resize>":
 			termWidth, termHeight := ui.TerminalDimensions()
 			grid.SetRect(0, 0, termWidth, termHeight)
-			ui.Clear()
+			ui.Render(grid)
 		case "<MouseLeft>":
 
 			if util.HandleMouseClickEventOnTabBar(e, mf.ui.tabpane) {
