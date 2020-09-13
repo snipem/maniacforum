@@ -63,9 +63,4 @@ Zum Beispiel für den Sync über Dropbox: `MANIACFORUM_READLOG_FILE="$HOME/dropb
 
 * Make git clean
 * Look up latest release under: https://github.com/snipem/maniacforum/releases
-* `make TAG_VERSION=0.0.12 release`
-
-### Known Bugs
-
-* Flicker on initial load
-* Resize does not work
+* `make TAG_VERSION=1.1.4 release`
