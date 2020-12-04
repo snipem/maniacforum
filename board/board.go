@@ -341,7 +341,10 @@ func searchMessages(query string, authorName string, boardID string, searchInBod
 		m.Board = &Board{}
 		m.Thread = &Thread{}
 
-		m.Board.ID, m.Thread.ID, m.ID = util.ExtractIDsFromLink(m.Link)
+		m.Board.ID, m.Thread.ID, m.ID, err = util.ExtractIDsFromLink(m.Link)
+		if err != nil {
+			log.Fatal("Cannot extraect IDs from link")
+		}
 
 		messages = append(messages, m)
 	})
