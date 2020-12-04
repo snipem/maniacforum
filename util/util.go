@@ -1,6 +1,7 @@
 package util
 
 import (
+	"fmt"
 	"log"
 	"net/url"
 	"regexp"
@@ -111,7 +112,9 @@ func HandleMouseClickEventOnList(e ui.Event, list *widgets.List) bool {
 
 }
 
-func ExtractIDsFromLink(link string) (boardID string, threadID string, messageID string) {
+// ExtractIDsFromLink returns boardID, threadID and messageID from a given forum link.
+// Returns err if one if the IDs cannot be extracted
+func ExtractIDsFromLink(link string) (boardID string, threadID string, messageID string, err error) {
 	u, err := url.Parse(link)
 	if err != nil {
 		log.Fatal(err)
@@ -120,6 +123,16 @@ func ExtractIDsFromLink(link string) (boardID string, threadID string, messageID
 	boardID = u.Query().Get("brdid")
 	threadID = u.Query().Get("thrdid")
 	messageID = u.Query().Get("msgid")
+
+	if boardID == "" {
+		return "", "", "", fmt.Errorf("Cannot extract boardID from %s", link)
+	}
+	if threadID == "" {
+		return "", "", "", fmt.Errorf("Cannot extract threadID from %s", link)
+	}
+	if messageID == "" {
+		return "", "", "", fmt.Errorf("Cannot extract messageID from %s", link)
+	}
 
 	return
 }
