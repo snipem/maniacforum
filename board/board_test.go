@@ -46,7 +46,8 @@ func TestThread(t *testing.T) {
 }
 
 func TestMessage(t *testing.T) {
-	message := GetMessage("pxmboard.php?mode=message&brdid=1&msgid=4377586")
+	message, err := GetMessage("pxmboard.php?mode=message&brdid=1&msgid=4377586")
+	assert.Nil(t, err)
 	t.Log("Message: ", message.Content)
 	t.Log("Link: ", message.Link)
 	expected := "Trophy-Sharing bedeutet nicht zwingend Cross-Buy"
@@ -75,7 +76,8 @@ func TestSearch(t *testing.T) {
 
 	query := "Maniacforum Demake"
 	authorName := "snimat"
-	messages := searchMessages(query, authorName, "-1", false, true)
+	messages, err := searchMessages(query, authorName, "-1", false, true)
+	assert.Nil(t, err)
 
 	assert.Greater(t, len(messages), 0)
 	assert.Equal(t, messages[0].Author.Name, authorName)
@@ -86,7 +88,8 @@ func TestSearchEmptyResult(t *testing.T) {
 
 	query := "Query for user that hopefully will never exist"
 	authorName := "hopefully this user will never exist"
-	messages := searchMessages(query, authorName, "-1", false, true)
+	messages, err := searchMessages(query, authorName, "-1", false, true)
+	assert.Nil(t, err)
 
 	assert.Equal(t, len(messages), 0)
 

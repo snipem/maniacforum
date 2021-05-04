@@ -2,6 +2,7 @@ package board
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -98,6 +99,10 @@ func init() {
 	Logger = log.New(f, "board.go ", log.LstdFlags)
 }
 
+func ClearCache() {
+	c.Flush()
+}
+
 // getReadLogFilePath from env var or default .config file path
 func getReadLogFilePath() string {
 	var path string
@@ -121,7 +126,7 @@ func getReadLogFilePath() string {
 func GetThread(threadID string, boardID string) Thread {
 	resource := "pxmboard.php?mode=thread&brdid=" + boardID + "&thrdid=" + threadID
 	var t Thread
-	doc := getDoc(resource)
+	doc, _ := getDoc(resource)
 
 	doc.Find("li").Each(func(i int, s *goquery.Selection) {
 		var m Message
@@ -153,10 +158,10 @@ func cleanMessageID(dirty string) string {
 }
 
 // GetMessage fetches a message based on it's resource string
-func GetMessage(resource string) Message {
+func GetMessage(resource string) (Message, error) {
 
 	if resource == "" {
-		log.Fatalf("Resource id is empty")
+		return Message{}, fmt.Errorf("resource id is empty")
 	}
 
 	var m Message
@@ -164,7 +169,10 @@ func GetMessage(resource string) Message {
 	values, _ := url.ParseQuery(resource)
 	m.ID = cleanMessageID(values.Get("msgid"))
 
-	doc := getDoc(resource)
+	doc, err := getDoc(resource)
+	if err != nil {
+		return Message{}, err
+	}
 
 	doc.Find(".bg2 > td > font").Each(func(i int, s *goquery.Selection) {
 		m.Content = s.Text()
@@ -183,7 +191,7 @@ func GetMessage(resource string) Message {
 		m.Author.ID, _ = strconv.Atoi(out)
 	})
 
-	return m
+	return m, nil
 }
 
 // SetMessageAsRead sets a message as read
@@ -223,7 +231,7 @@ func IsMessageRead(id string) bool {
 }
 
 // getDoc fetches a resource of the board directly or via cache if `useCache` is true
-func getDoc(resource string) *goquery.Document {
+func getDoc(resource string) (document *goquery.Document, err error) {
 	// Request the HTML page.
 	url := BoardURL + resource
 
@@ -234,21 +242,24 @@ func getDoc(resource string) *goquery.Document {
 	if useCache && foundInCache { // Use cached resource if cache is used
 		body = cachedBody.(string)
 	} else { // Fetch resource if not in cache
-		body = httpGet(url)
+		body, err = httpGet(url)
+		if err != nil {
+			return nil, err
+		}
 		c.Set(url, body, cache.DefaultExpiration)
 	}
 
 	// Load the HTML document
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(body))
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-	return doc
+	return doc, err
 
 }
 
 // httpGet fetches the content of a url and returns the body of the response
-func httpGet(url string) string {
+func httpGet(url string) (string, error) {
 
 	client := &http.Client{}
 
@@ -259,20 +270,20 @@ func httpGet(url string) string {
 	res, err := client.Do(req)
 
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 	defer res.Body.Close()
 	if res.StatusCode != 200 {
-		log.Fatalf("status code error: %d %s", res.StatusCode, res.Status)
+		return "", fmt.Errorf("status code is not 200: %d %s", res.StatusCode, res.Status)
 	}
 
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(res.Body)
-	return buf.String()
+	return buf.String(), nil
 }
 
 // httpPost posts the data to a url and returns the body of the response
-func httpPost(url string, data url.Values) string {
+func httpPost(url string, data url.Values) (string, error) {
 
 	client := &http.Client{}
 
@@ -285,21 +296,21 @@ func httpPost(url string, data url.Values) string {
 	res, err := client.PostForm(url, data)
 
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 	defer res.Body.Close()
 	if res.StatusCode != 200 {
-		log.Fatalf("status code error: %d %s", res.StatusCode, res.Status)
+		return "", fmt.Errorf("status code is not 200: %d %s", res.StatusCode, res.Status)
 	}
 
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(res.Body)
-	return buf.String()
+	return buf.String(), nil
 }
 
 // searchMessages returns the list of matching messages from the new search of the forum
 // boardID = -1 will search every forum as for the documentation of the service
-func searchMessages(query string, authorName string, boardID string, searchInBody bool, searchInTopic bool) []Message {
+func searchMessages(query string, authorName string, boardID string, searchInBody bool, searchInTopic bool) ([]Message, error) {
 
 	cbxBody := "0"
 	cbxSubject := "0"
@@ -312,7 +323,7 @@ func searchMessages(query string, authorName string, boardID string, searchInBod
 		cbxSubject = "1"
 	}
 
-	body := httpPost(BoardURL+"search/search.php", url.Values{
+	body, _ := httpPost(BoardURL+"search/search.php", url.Values{
 		"phrase":     {query},
 		"autor":      {authorName},
 		"board":      {boardID},
@@ -322,7 +333,7 @@ func searchMessages(query string, authorName string, boardID string, searchInBod
 	})
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(body))
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	var messages []Message
@@ -335,13 +346,13 @@ func searchMessages(query string, authorName string, boardID string, searchInBod
 		var exists bool
 		m.Link, exists = s.Attr("href")
 		if !exists {
-			log.Fatal("Can't extract links from search")
+			log.Print("Can't extract links from search")
 		}
 
 		m.Board = &Board{}
 		m.Thread = &Thread{}
 
-		m.Board.ID, m.Thread.ID, m.ID = util.ExtractIDsFromLink(m.Link)
+		m.Board.ID, m.Thread.ID, m.ID, _ = util.ExtractIDsFromLink(m.Link)
 
 		messages = append(messages, m)
 	})
@@ -349,7 +360,7 @@ func searchMessages(query string, authorName string, boardID string, searchInBod
 	// Second run for getting the non HTML encapsulated author names and dates
 	splittedResults := strings.Split(body, "Matches:")
 	if len(splittedResults) != 2 {
-		return messages
+		return messages, nil
 	}
 	matches := strings.Split(splittedResults[1], "<br>")
 
@@ -367,13 +378,13 @@ func searchMessages(query string, authorName string, boardID string, searchInBod
 
 	}
 
-	return messages
+	return messages, nil
 }
 
 // GetForum returns the forum
 func GetForum() Forum {
 
-	mainPage := getDoc("pxmboard.php")
+	mainPage, _ := getDoc("pxmboard.php")
 	var boards []Board
 
 	mainPage.Find("#norm > a").Each(func(index int, item *goquery.Selection) {
@@ -406,7 +417,7 @@ func GetBoard(boardID string) Board {
 	var board Board
 
 	resource := "pxmboard.php?mode=threadlist&brdid=" + boardID + "&sortorder=last"
-	doc := getDoc(resource)
+	doc, _ := getDoc(resource)
 
 	board.Title = doc.Find(".currentBoard > span").Text()
 	board.ID = boardID

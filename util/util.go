@@ -1,7 +1,6 @@
 package util
 
 import (
-	"log"
 	"net/url"
 	"regexp"
 	"strconv"
@@ -111,10 +110,10 @@ func HandleMouseClickEventOnList(e ui.Event, list *widgets.List) bool {
 
 }
 
-func ExtractIDsFromLink(link string) (boardID string, threadID string, messageID string) {
+func ExtractIDsFromLink(link string) (boardID string, threadID string, messageID string, err error) {
 	u, err := url.Parse(link)
 	if err != nil {
-		log.Fatal(err)
+		return "", "", "", err
 	}
 	// https://www.maniac-forum.de/forum/pxmboard.php?mode=board&brdid=6&thrdid=178514&msgid=4746825"
 	boardID = u.Query().Get("brdid")

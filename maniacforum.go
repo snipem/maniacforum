@@ -3,9 +3,9 @@ package main
 // run: make run
 
 import (
+	"flag"
 	"fmt"
 	"log"
-	"os"
 	"strconv"
 	"time"
 
@@ -25,6 +25,7 @@ import (
 type maniacforum struct {
 	active maniacforumModel
 	ui     uiContent
+	useSSL *bool
 }
 
 type maniacforumModel struct {
@@ -105,7 +106,13 @@ func (mf *maniacforum) loadBoard() {
 func (mf *maniacforum) loadMessage() {
 	if len(mf.active.threads.Messages) > 0 {
 		start := time.Now()
-		mf.active.message = board.GetMessage(mf.active.threads.Messages[mf.ui.threadPanel.SelectedRow].Link)
+		var err error
+		mf.active.message, err = board.GetMessage(mf.active.threads.Messages[mf.ui.threadPanel.SelectedRow].Link)
+
+		// Just print the error to the screen
+		if err != nil {
+			log.Print(err)
+		}
 
 		mf.active.message.EnrichedContent, mf.active.message.Links = util.EnrichContent(mf.active.message.Content, mf.ui.messagePanel.Inner.Dx())
 		mf.ui.messagePanel.Rows = strings.Split(mf.active.message.EnrichedContent, "\n")
@@ -149,19 +156,32 @@ func (mf *maniacforum) selectNextUnreadMessage() {
 // answerMessage uses the default system browser to open the answerMessage link of the currently selected message
 func (mf *maniacforum) answerMessage() {
 	answerURL := board.BoardURL + "pxmboard.php?mode=messageform&brdid=" + mf.active.board.ID + "&msgid=" + mf.active.message.ID
-	open.Run(answerURL)
+	err := open.Run(answerURL)
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 // openMessage uses the default system browser to open currently selected message
 func (mf *maniacforum) openMessage() {
 	answerURL := board.BoardURL + "pxmboard.php?mode=message&brdid=" + mf.active.board.ID + "&msgid=" + mf.active.message.ID
-	open.Run(answerURL)
+	err := open.Run(answerURL)
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 // loadThread loads selected thread from board and displays the first message
 func (mf *maniacforum) loadThread() {
 	// FIXME this logic with Threads and threads seems illogic
-	mf.active.message = board.GetMessage(mf.active.board.Threads[mf.ui.boardPanel.SelectedRow].Link)
+	var err error
+	mf.active.message, err = board.GetMessage(mf.active.board.Threads[mf.ui.boardPanel.SelectedRow].Link)
+
+	// Just print the error to the screen
+	if err != nil {
+		log.Print(err)
+	}
+
 	mf.active.threads = board.GetThread(mf.active.board.Threads[mf.ui.boardPanel.SelectedRow].ID, mf.active.board.ID)
 	mf.ui.threadPanel.SelectedRow = 0
 
@@ -207,7 +227,7 @@ func (mf *maniacforum) renderThread() {
 // openLinks opens a link in the displayed message with the default system browser
 func (mf *maniacforum) openLink(nr int) error {
 	if nr > len(mf.active.message.Links) {
-		return fmt.Errorf("No link with number %d in message", nr)
+		return fmt.Errorf("no link with number %d in message", nr)
 	}
 	link := mf.active.message.Links[nr-1]
 	cleanedLink := strings.Replace(link, "[", "", 1)
@@ -275,12 +295,18 @@ func main() {
 
 func run() {
 
-	if len(os.Args) > 1 {
-		fmt.Print(helpPage)
-		os.Exit(0)
-	}
+	useSsl := flag.Bool("useSsl", true, "Use SSL for backend connections")
+	_ = flag.String("url", board.BoardURL, "URL of Board")
+
+	flag.Parse()
+
+	//if len(os.Args) > 1 {
+	//	fmt.Print(helpPage)
+	//	os.Exit(0)
+	//}
 
 	var mf maniacforum
+	mf.useSSL = useSsl
 
 	if err := ui.Init(); err != nil {
 		log.Fatalf("failed to initialize termui: %v", err)
@@ -348,13 +374,20 @@ func run() {
 			}
 		case "1", "2", "3", "4", "5", "6", "7", "8", "9", "0":
 			linkNr, _ := strconv.Atoi(e.ID)
-			mf.openLink(linkNr)
+			err := mf.openLink(linkNr)
+			if err != nil {
+				log.Println(err)
+			}
 		case "a":
 			mf.answerMessage()
 		case "e":
 			mf.openMessage()
 		case "q", "<C-c>":
 			return
+		case "r":
+			board.ClearCache()
+			ui.Clear()
+			mf.initialize()
 		case "?":
 			enrichedHelp, helpLinks := util.EnrichContent(helpPage, mf.ui.messagePanel.Inner.Dx())
 			mf.active.message.Links = helpLinks
