@@ -239,8 +239,13 @@ func (mf *maniacforum) openLink(nr int) error {
 	return nil
 }
 
-func (mf *maniacforum) loadForum(forumUrl string, sslStrict bool) {
-	mf.active.forum = board.GetForum(forumUrl, sslStrict)
+func (mf *maniacforum) loadForum(forumUrl string, ignoreSSL bool) (err error) {
+	mf.active.forum, err = board.GetForum(forumUrl, ignoreSSL)
+
+	if err != nil {
+		return err
+	}
+
 	var boardNames []string
 
 	for _, thread := range mf.active.forum.Boards {
@@ -251,6 +256,8 @@ func (mf *maniacforum) loadForum(forumUrl string, sslStrict bool) {
 	// mf.ui.tabpane.SetRect(0, 1, 50, 4)
 	mf.ui.tabpane.Border = false
 	mf.ui.tabpane.ActiveTabIndex = 0
+
+	return nil
 }
 
 func (mf *maniacforum) initialize() {
@@ -289,20 +296,23 @@ func (mf *maniacforum) colorize() {
 }
 
 func main() {
-	run()
+	err := run()
+	if err != nil {
+		log.Println(err)
+	}
 }
 
-func run() {
+func run() error {
 
-	useSsl := flag.Bool("useSsl", true, "Use SSL for backend connections")
-	boardUrl := flag.String("url", board.DefaultBoardURL, "URL of Board")
+	ignoreSSL := flag.Bool("ignoreSSL", false, "Ignore SSL. Future legacy mode, if SSL handshake fails on old machines.")
+	boardUrl := flag.String("url", board.DefaultBoardURL, "URL of Maniac Forum")
 
 	flag.Parse()
 
 	var mf maniacforum
 
 	if err := ui.Init(); err != nil {
-		log.Fatalf("failed to initialize termui: %v", err)
+		return fmt.Errorf("failed to initialize termui: %v", err)
 	}
 	defer ui.Close()
 
@@ -315,7 +325,10 @@ func run() {
 
 	mf.ui.messagePanel.WrapText = false
 
-	mf.loadForum(*boardUrl, *useSsl)
+	err := mf.loadForum(*boardUrl, *ignoreSSL)
+	if err != nil {
+		return err
+	}
 
 	mf.ui.boardPanel.WrapText = false
 	mf.colorize()
@@ -376,7 +389,7 @@ func run() {
 		case "e":
 			mf.openMessage()
 		case "q", "<C-c>":
-			return
+			return nil
 		case "r":
 			board.ClearCache()
 			ui.Clear()
@@ -501,4 +514,5 @@ func run() {
 
 		ui.Render(mf.ui.boardPanel, mf.ui.messagePanel, mf.ui.threadPanel, mf.ui.tabpane)
 	}
+	return nil
 }

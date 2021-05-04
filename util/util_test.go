@@ -83,3 +83,14 @@ func TestExtractIDsFromLink(t *testing.T) {
 	assert.Equal(t, "4746825", messageID)
 
 }
+
+func TestJoinURLs(t *testing.T) {
+	joinedUrls := JoinURL("http://test.de","path1", "path2")
+	assert.Equal(t, "http://test.de/path1/path2", joinedUrls)
+
+	joinedUrls = JoinURL("http://test.de/","path1", "path2")
+	assert.Equal(t, "http://test.de/path1/path2", joinedUrls, "Trailing Slash")
+
+	joinedUrls = JoinURL("http://test.de/","/path1", "/path2")
+	assert.Equal(t, "http://test.de/path1/path2", joinedUrls, "Leading Slashes in path")
+}

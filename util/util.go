@@ -3,6 +3,7 @@ package util
 import (
 	"fmt"
 	"net/url"
+	"path"
 	"regexp"
 	"strconv"
 	"strings"
@@ -134,4 +135,10 @@ func ExtractIDsFromLink(link string) (boardID string, threadID string, messageID
 	}
 
 	return
+}
+
+//JoinURL joins a base with url paths
+func JoinURL(base string, paths ...string) string {
+	     p := path.Join(paths...)
+	     return fmt.Sprintf("%s/%s", strings.TrimRight(base, "/"), strings.TrimLeft(p, "/"))
 }

@@ -2,6 +2,7 @@ package board
 
 import (
 	"bytes"
+	"crypto/tls"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -28,7 +29,7 @@ var DefaultBoardURL = "https://www.maniac-forum.de/forum/"
 type Forum struct {
 	Boards    []Board
 	URL       string
-	SslStrict bool
+	ignoreSSL bool
 }
 
 // Thread contains information about a Maniac Forum Thread
@@ -235,20 +236,20 @@ func IsMessageRead(id string) bool {
 // getDoc fetches a resource of the board directly or via cache if `useCache` is true
 func (f *Forum) getDoc(resource string) (document *goquery.Document, err error) {
 	// Request the HTML page.
-	url := f.URL + resource
+	forumURL := util.JoinURL(f.URL, resource)
 
 	var body string
 
 	// Check if resource is already in cache
-	cachedBody, foundInCache := c.Get(url)
+	cachedBody, foundInCache := c.Get(forumURL)
 	if useCache && foundInCache { // Use cached resource if cache is used
 		body = cachedBody.(string)
 	} else { // Fetch resource if not in cache
-		body, err = f.httpGet(url)
+		body, err = f.httpGet(forumURL)
 		if err != nil {
 			return nil, err
 		}
-		c.Set(url, body, cache.DefaultExpiration)
+		c.Set(forumURL, body, cache.DefaultExpiration)
 	}
 
 	// Load the HTML document
@@ -265,6 +266,8 @@ func (f *Forum) httpGet(url string) (string, error) {
 
 	client := &http.Client{}
 
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: f.ignoreSSL}
+
 	Logger.Printf("Fetching %s", strings.Replace(url, f.URL, "", 1))
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -276,7 +279,7 @@ func (f *Forum) httpGet(url string) (string, error) {
 	}
 	defer res.Body.Close()
 	if res.StatusCode != 200 {
-		return "", fmt.Errorf("status code is not 200: %d %s", res.StatusCode, res.Status)
+		return "", fmt.Errorf("status for request %s code is not 200: %s", res.Request.URL, res.Status)
 	}
 
 	buf := new(bytes.Buffer)
@@ -288,6 +291,8 @@ func (f *Forum) httpGet(url string) (string, error) {
 func (f *Forum) httpPost(url string, data url.Values) (string, error) {
 
 	client := &http.Client{}
+
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: f.ignoreSSL}
 
 	Logger.Printf("Fetching %s", strings.Replace(url, f.URL, "", 1))
 
@@ -325,7 +330,7 @@ func (f *Forum) searchMessages(query string, authorName string, boardID string, 
 		cbxSubject = "1"
 	}
 
-	body, _ := f.httpPost(f.URL+"search/search.php", url.Values{
+	body, _ := f.httpPost(util.JoinURL(f.URL,"search/search.php"), url.Values{
 		"phrase":     {query},
 		"autor":      {authorName},
 		"board":      {boardID},
@@ -387,14 +392,17 @@ func (f *Forum) searchMessages(query string, authorName string, boardID string, 
 }
 
 // GetForum returns the forum
-func GetForum(forumUrl string, sslStrict bool) *Forum {
+func GetForum(forumUrl string, ignoreSSL bool) (*Forum, error) {
 
 	f := &Forum{
-		URL:    forumUrl,
-		SslStrict: sslStrict,
+		URL:       forumUrl,
+		ignoreSSL: ignoreSSL,
 	}
 
-	mainPage, _ := f.getDoc("pxmboard.php")
+	mainPage, err := f.getDoc("pxmboard.php")
+	if err != nil {
+		return nil, err
+	}
 	var boards []Board
 
 	mainPage.Find("#norm > a").Each(func(index int, item *goquery.Selection) {
@@ -419,7 +427,7 @@ func GetForum(forumUrl string, sslStrict bool) *Forum {
 
 	f.Boards = boards
 
-	return f
+	return f, nil
 
 }
 

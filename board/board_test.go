@@ -1,6 +1,7 @@
 package board
 
 import (
+	"log"
 	"os"
 	"strings"
 	"testing"
@@ -11,7 +12,11 @@ import (
 var f *Forum
 
 func TestMain(m *testing.M) {
-	f = GetForum(DefaultBoardURL, true)
+	var err error
+	f, err = GetForum(DefaultBoardURL, false)
+	if err != nil {
+		log.Fatal(err)
+	}
 	code:= m.Run()
 	os.Exit(code)
 }
