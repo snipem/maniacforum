@@ -21,12 +21,14 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-// BoardURL is the base url of the forum
-var BoardURL = "https://www.maniac-forum.de/forum/"
+// DefaultBoardURL is the default base url of the forum
+var DefaultBoardURL = "https://www.maniac-forum.de/forum/"
 
 // Forum represents the whole forum
 type Forum struct {
-	Boards []Board
+	Boards    []Board
+	URL       string
+	SslStrict bool
 }
 
 // Thread contains information about a Maniac Forum Thread
@@ -123,10 +125,10 @@ func getReadLogFilePath() string {
 }
 
 // GetThread fetches a Thread based on a Thread id
-func GetThread(threadID string, boardID string) Thread {
+func (f *Forum) GetThread(threadID string, boardID string) Thread {
 	resource := "pxmboard.php?mode=thread&brdid=" + boardID + "&thrdid=" + threadID
 	var t Thread
-	doc, _ := getDoc(resource)
+	doc, _ := f.getDoc(resource)
 
 	doc.Find("li").Each(func(i int, s *goquery.Selection) {
 		var m Message
@@ -158,7 +160,7 @@ func cleanMessageID(dirty string) string {
 }
 
 // GetMessage fetches a message based on it's resource string
-func GetMessage(resource string) (Message, error) {
+func (f *Forum) GetMessage(resource string) (Message, error) {
 
 	if resource == "" {
 		return Message{}, fmt.Errorf("resource id is empty")
@@ -169,7 +171,7 @@ func GetMessage(resource string) (Message, error) {
 	values, _ := url.ParseQuery(resource)
 	m.ID = cleanMessageID(values.Get("msgid"))
 
-	doc, err := getDoc(resource)
+	doc, err := f.getDoc(resource)
 	if err != nil {
 		return Message{}, err
 	}
@@ -231,9 +233,9 @@ func IsMessageRead(id string) bool {
 }
 
 // getDoc fetches a resource of the board directly or via cache if `useCache` is true
-func getDoc(resource string) (document *goquery.Document, err error) {
+func (f *Forum) getDoc(resource string) (document *goquery.Document, err error) {
 	// Request the HTML page.
-	url := BoardURL + resource
+	url := f.URL + resource
 
 	var body string
 
@@ -242,7 +244,7 @@ func getDoc(resource string) (document *goquery.Document, err error) {
 	if useCache && foundInCache { // Use cached resource if cache is used
 		body = cachedBody.(string)
 	} else { // Fetch resource if not in cache
-		body, err = httpGet(url)
+		body, err = f.httpGet(url)
 		if err != nil {
 			return nil, err
 		}
@@ -259,11 +261,11 @@ func getDoc(resource string) (document *goquery.Document, err error) {
 }
 
 // httpGet fetches the content of a url and returns the body of the response
-func httpGet(url string) (string, error) {
+func (f *Forum) httpGet(url string) (string, error) {
 
 	client := &http.Client{}
 
-	Logger.Printf("Fetching %s", strings.Replace(url, BoardURL, "", 1))
+	Logger.Printf("Fetching %s", strings.Replace(url, f.URL, "", 1))
 
 	req, err := http.NewRequest("GET", url, nil)
 	req.Header.Add("User-Agent", "maniacforum-cli")
@@ -283,11 +285,11 @@ func httpGet(url string) (string, error) {
 }
 
 // httpPost posts the data to a url and returns the body of the response
-func httpPost(url string, data url.Values) (string, error) {
+func (f *Forum) httpPost(url string, data url.Values) (string, error) {
 
 	client := &http.Client{}
 
-	Logger.Printf("Fetching %s", strings.Replace(url, BoardURL, "", 1))
+	Logger.Printf("Fetching %s", strings.Replace(url, f.URL, "", 1))
 
 	// TODO Use User Agent
 	// req, err := http.NewRequest("POST", url, nil)
@@ -310,7 +312,7 @@ func httpPost(url string, data url.Values) (string, error) {
 
 // searchMessages returns the list of matching messages from the new search of the forum
 // boardID = -1 will search every forum as for the documentation of the service
-func searchMessages(query string, authorName string, boardID string, searchInBody bool, searchInTopic bool) ([]Message, error) {
+func (f *Forum) searchMessages(query string, authorName string, boardID string, searchInBody bool, searchInTopic bool) ([]Message, error) {
 
 	cbxBody := "0"
 	cbxSubject := "0"
@@ -323,7 +325,7 @@ func searchMessages(query string, authorName string, boardID string, searchInBod
 		cbxSubject = "1"
 	}
 
-	body, _ := httpPost(BoardURL+"search/search.php", url.Values{
+	body, _ := f.httpPost(f.URL+"search/search.php", url.Values{
 		"phrase":     {query},
 		"autor":      {authorName},
 		"board":      {boardID},
@@ -385,9 +387,14 @@ func searchMessages(query string, authorName string, boardID string, searchInBod
 }
 
 // GetForum returns the forum
-func GetForum() Forum {
+func GetForum(forumUrl string, sslStrict bool) *Forum {
 
-	mainPage, _ := getDoc("pxmboard.php")
+	f := &Forum{
+		URL:    forumUrl,
+		SslStrict: sslStrict,
+	}
+
+	mainPage, _ := f.getDoc("pxmboard.php")
 	var boards []Board
 
 	mainPage.Find("#norm > a").Each(func(index int, item *goquery.Selection) {
@@ -410,17 +417,19 @@ func GetForum() Forum {
 		}
 	})
 
-	return Forum{boards}
+	f.Boards = boards
+
+	return f
 
 }
 
 // GetBoard fetches a Board like Smalltalk and the list of threads
-func GetBoard(boardID string) Board {
+func (f *Forum) GetBoard(boardID string) Board {
 
 	var board Board
 
 	resource := "pxmboard.php?mode=threadlist&brdid=" + boardID + "&sortorder=last"
-	doc, _ := getDoc(resource)
+	doc, _ := f.getDoc(resource)
 
 	board.Title = doc.Find(".currentBoard > span").Text()
 	board.ID = boardID

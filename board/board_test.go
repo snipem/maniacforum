@@ -1,25 +1,34 @@
 package board
 
 import (
+	"os"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
+var f *Forum
+
+func TestMain(m *testing.M) {
+	f = GetForum(DefaultBoardURL, true)
+	code:= m.Run()
+	os.Exit(code)
+}
+
 func TestForum(t *testing.T) {
 
-	maniacforum := GetForum()
-	assert.Equal(t, "1", maniacforum.Boards[0].ID)
-	assert.Equal(t, "2", maniacforum.Boards[1].ID)
-	assert.Equal(t, "4", maniacforum.Boards[2].ID)
-	assert.Equal(t, "6", maniacforum.Boards[3].ID)
-	assert.Equal(t, "26", maniacforum.Boards[4].ID)
+	assert.Equal(t, "1", f.Boards[0].ID)
+	assert.Equal(t, "2", f.Boards[1].ID)
+	assert.Equal(t, "4", f.Boards[2].ID)
+	assert.Equal(t, "6", f.Boards[3].ID)
+	assert.Equal(t, "26", f.Boards[4].ID)
 	// Boards after this might change due to events like E3 or WM
 }
 
 func TestBoard(t *testing.T) {
-	forum := GetBoard("1")
+
+	forum := f.GetBoard("1")
 	threads := forum.Threads
 
 	// TODO Flaky, because it sticks to the sticky note
@@ -37,7 +46,7 @@ func TestBoard(t *testing.T) {
 }
 
 func TestThread(t *testing.T) {
-	thread := GetThread("173448", "1")
+	thread := f.GetThread("173448", "1")
 	if len(thread.Messages) == 0 {
 		t.Errorf("No messages returned")
 	}
@@ -46,7 +55,7 @@ func TestThread(t *testing.T) {
 }
 
 func TestMessage(t *testing.T) {
-	message, err := GetMessage("pxmboard.php?mode=message&brdid=1&msgid=4377586")
+	message, err := f.GetMessage("pxmboard.php?mode=message&brdid=1&msgid=4377586")
 	assert.Nil(t, err)
 	t.Log("Message: ", message.Content)
 	t.Log("Link: ", message.Link)
@@ -76,7 +85,7 @@ func TestSearch(t *testing.T) {
 
 	query := "Maniacforum Demake"
 	authorName := "snimat"
-	messages, err := searchMessages(query, authorName, "-1", false, true)
+	messages, err := f.searchMessages(query, authorName, "-1", false, true)
 	assert.Nil(t, err)
 
 	assert.Greater(t, len(messages), 0)
@@ -88,7 +97,7 @@ func TestSearchEmptyResult(t *testing.T) {
 
 	query := "Query for user that hopefully will never exist"
 	authorName := "hopefully this user will never exist"
-	messages, err := searchMessages(query, authorName, "-1", false, true)
+	messages, err := f.searchMessages(query, authorName, "-1", false, true)
 	assert.Nil(t, err)
 
 	assert.Equal(t, len(messages), 0)

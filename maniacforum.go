@@ -23,15 +23,14 @@ import (
 
 // maniacforum ...
 type maniacforum struct {
-	active maniacforumModel
-	ui     uiContent
-	useSSL *bool
+	active   maniacforumModel
+	ui       uiContent
 }
 
 type maniacforumModel struct {
 	threads board.Thread
 	board   board.Board
-	forum   board.Forum
+	forum   *board.Forum
 	message board.Message
 	state   maniacforumState
 }
@@ -81,7 +80,7 @@ Globale Steuerung
 
 func (mf *maniacforum) loadBoard() {
 	boardID := mf.active.forum.Boards[mf.ui.tabpane.ActiveTabIndex].ID
-	mf.active.board = board.GetBoard(boardID)
+	mf.active.board = mf.active.forum.GetBoard(boardID)
 	// threads = mf.active.board.Threads
 
 	// Clear board panel
@@ -107,7 +106,7 @@ func (mf *maniacforum) loadMessage() {
 	if len(mf.active.threads.Messages) > 0 {
 		start := time.Now()
 		var err error
-		mf.active.message, err = board.GetMessage(mf.active.threads.Messages[mf.ui.threadPanel.SelectedRow].Link)
+		mf.active.message, err = mf.active.forum.GetMessage(mf.active.threads.Messages[mf.ui.threadPanel.SelectedRow].Link)
 
 		// Just print the error to the screen
 		if err != nil {
@@ -134,7 +133,7 @@ func (mf *maniacforum) loadMessage() {
 			for i := 1; i <= fetchAheadMessages; i++ {
 				// Go routine will run in background even if function finishes. The actual message is returned
 				// and the content of the fetch ahead messages is stored into the cache
-				go board.GetMessage(mf.active.threads.Messages[mf.ui.threadPanel.SelectedRow+i].Link)
+				go mf.active.forum.GetMessage(mf.active.threads.Messages[mf.ui.threadPanel.SelectedRow+i].Link)
 			}
 		}
 	}
@@ -155,7 +154,7 @@ func (mf *maniacforum) selectNextUnreadMessage() {
 
 // answerMessage uses the default system browser to open the answerMessage link of the currently selected message
 func (mf *maniacforum) answerMessage() {
-	answerURL := board.BoardURL + "pxmboard.php?mode=messageform&brdid=" + mf.active.board.ID + "&msgid=" + mf.active.message.ID
+	answerURL := mf.active.forum.URL + "pxmboard.php?mode=messageform&brdid=" + mf.active.board.ID + "&msgid=" + mf.active.message.ID
 	err := open.Run(answerURL)
 	if err != nil {
 		log.Println(err)
@@ -164,7 +163,7 @@ func (mf *maniacforum) answerMessage() {
 
 // openMessage uses the default system browser to open currently selected message
 func (mf *maniacforum) openMessage() {
-	answerURL := board.BoardURL + "pxmboard.php?mode=message&brdid=" + mf.active.board.ID + "&msgid=" + mf.active.message.ID
+	answerURL := mf.active.forum.URL + "pxmboard.php?mode=message&brdid=" + mf.active.board.ID + "&msgid=" + mf.active.message.ID
 	err := open.Run(answerURL)
 	if err != nil {
 		log.Println(err)
@@ -175,14 +174,14 @@ func (mf *maniacforum) openMessage() {
 func (mf *maniacforum) loadThread() {
 	// FIXME this logic with Threads and threads seems illogic
 	var err error
-	mf.active.message, err = board.GetMessage(mf.active.board.Threads[mf.ui.boardPanel.SelectedRow].Link)
+	mf.active.message, err = mf.active.forum.GetMessage(mf.active.board.Threads[mf.ui.boardPanel.SelectedRow].Link)
 
 	// Just print the error to the screen
 	if err != nil {
 		log.Print(err)
 	}
 
-	mf.active.threads = board.GetThread(mf.active.board.Threads[mf.ui.boardPanel.SelectedRow].ID, mf.active.board.ID)
+	mf.active.threads = mf.active.forum.GetThread(mf.active.board.Threads[mf.ui.boardPanel.SelectedRow].ID, mf.active.board.ID)
 	mf.ui.threadPanel.SelectedRow = 0
 
 	mf.renderThread()
@@ -196,7 +195,7 @@ func (mf *maniacforum) loadThread() {
 		for i := 1; i <= fetchAheadThreads; i++ {
 			// Go routine will run in background even if function finishes. The actual message is returned
 			// and the content of the fetch ahead messages is stored into the cache
-			go board.GetThread(mf.active.board.Threads[mf.ui.boardPanel.SelectedRow+i].ID, mf.active.board.ID)
+			go mf.active.forum.GetThread(mf.active.board.Threads[mf.ui.boardPanel.SelectedRow+i].ID, mf.active.board.ID)
 		}
 	}
 }
@@ -240,8 +239,8 @@ func (mf *maniacforum) openLink(nr int) error {
 	return nil
 }
 
-func (mf *maniacforum) loadForum() {
-	mf.active.forum = board.GetForum()
+func (mf *maniacforum) loadForum(forumUrl string, sslStrict bool) {
+	mf.active.forum = board.GetForum(forumUrl, sslStrict)
 	var boardNames []string
 
 	for _, thread := range mf.active.forum.Boards {
@@ -296,17 +295,11 @@ func main() {
 func run() {
 
 	useSsl := flag.Bool("useSsl", true, "Use SSL for backend connections")
-	_ = flag.String("url", board.BoardURL, "URL of Board")
+	boardUrl := flag.String("url", board.DefaultBoardURL, "URL of Board")
 
 	flag.Parse()
 
-	//if len(os.Args) > 1 {
-	//	fmt.Print(helpPage)
-	//	os.Exit(0)
-	//}
-
 	var mf maniacforum
-	mf.useSSL = useSsl
 
 	if err := ui.Init(); err != nil {
 		log.Fatalf("failed to initialize termui: %v", err)
@@ -322,7 +315,7 @@ func run() {
 
 	mf.ui.messagePanel.WrapText = false
 
-	mf.loadForum()
+	mf.loadForum(*boardUrl, *useSsl)
 
 	mf.ui.boardPanel.WrapText = false
 	mf.colorize()
