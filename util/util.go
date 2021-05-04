@@ -1,6 +1,7 @@
 package util
 
 import (
+	"fmt"
 	"net/url"
 	"regexp"
 	"strconv"
@@ -15,7 +16,7 @@ import (
 func EnrichContent(content string, wrapAt int) (string, []string) {
 	var enrichedContent = content
 	var links []string
-	r := regexp.MustCompile(`\[.*\]`)
+	r := regexp.MustCompile(`\[.*]`)
 	links = r.FindAllString(content, -1)
 
 	for i := 0; i < len(links); i++ {
@@ -110,6 +111,8 @@ func HandleMouseClickEventOnList(e ui.Event, list *widgets.List) bool {
 
 }
 
+// ExtractIDsFromLink returns boardID, threadID and messageID from a given forum link.
+// Returns err if one if the IDs cannot be extracted
 func ExtractIDsFromLink(link string) (boardID string, threadID string, messageID string, err error) {
 	u, err := url.Parse(link)
 	if err != nil {
@@ -119,6 +122,16 @@ func ExtractIDsFromLink(link string) (boardID string, threadID string, messageID
 	boardID = u.Query().Get("brdid")
 	threadID = u.Query().Get("thrdid")
 	messageID = u.Query().Get("msgid")
+
+	if boardID == "" {
+		return "", "", "", fmt.Errorf("cannot extract boardID from %s", link)
+	}
+	if threadID == "" {
+		return "", "", "", fmt.Errorf("cannot extract threadID from %s", link)
+	}
+	if messageID == "" {
+		return "", "", "", fmt.Errorf("cannot extract messageID from %s", link)
+	}
 
 	return
 }

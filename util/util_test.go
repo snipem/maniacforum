@@ -76,7 +76,8 @@ func TestQuoteFormattingNothingToFormat(t *testing.T) {
 
 func TestExtractIDsFromLink(t *testing.T) {
 
-	boardID, threadID, messageID, _ := ExtractIDsFromLink("https://www.maniac-forum.de/forum/pxmboard.php?mode=board&brdid=6&thrdid=178514&msgid=4746825")
+	boardID, threadID, messageID, err := ExtractIDsFromLink("https://www.maniac-forum.de/forum/pxmboard.php?mode=board&brdid=6&thrdid=178514&msgid=4746825")
+	assert.NoError(t, err)
 	assert.Equal(t, "6", boardID)
 	assert.Equal(t, "178514", threadID)
 	assert.Equal(t, "4746825", messageID)
