@@ -84,6 +84,11 @@ func HandleMouseClickEventOnTabBar(e ui.Event, bar *widgets.TabPane) bool {
 		// at the Y position of the mouse event. The number of | in the resulting string will reflect
 		// the clicked tab
 		wholeTabBarString := strings.Join(bar.TabNames, " | ")
+
+		if payload.X > len(wholeTabBarString) {
+			return false
+		}
+
 		tabNrClicked := strings.Count(wholeTabBarString[0:payload.X], "|")
 
 		bar.ActiveTabIndex = tabNrClicked
