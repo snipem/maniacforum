@@ -23,7 +23,8 @@ import (
 )
 
 // DefaultBoardURL is the default base url of the forum
-var DefaultBoardURL = "https://www.maniac-forum.de/forum/"
+var DefaultBoardURL = "https://www.maniac-forum.de/forum"
+var PCXBoardURL = "https://www.pcx-forum.com"
 
 // Forum represents the whole forum
 type Forum struct {
@@ -126,10 +127,13 @@ func getReadLogFilePath() string {
 }
 
 // GetThread fetches a Thread based on a Thread id
-func (f *Forum) GetThread(threadID string, boardID string) Thread {
+func (f *Forum) GetThread(threadID string, boardID string) (Thread, error) {
 	resource := "pxmboard.php?mode=thread&brdid=" + boardID + "&thrdid=" + threadID
 	var t Thread
-	doc, _ := f.getDoc(resource)
+	doc, err := f.getDoc(resource)
+	if err != nil {
+		return Thread{},err
+	}
 
 	doc.Find("li").Each(func(i int, s *goquery.Selection) {
 		var m Message
@@ -152,7 +156,7 @@ func (f *Forum) GetThread(threadID string, boardID string) Thread {
 		t.Messages = append(t.Messages, m)
 	})
 
-	return t
+	return t, nil
 }
 
 func cleanMessageID(dirty string) string {
@@ -315,9 +319,9 @@ func (f *Forum) httpPost(url string, data url.Values) (string, error) {
 	return buf.String(), nil
 }
 
-// searchMessages returns the list of matching messages from the new search of the forum
+// SearchMessages returns the list of matching messages from the new search of the forum
 // boardID = -1 will search every forum as for the documentation of the service
-func (f *Forum) searchMessages(query string, authorName string, boardID string, searchInBody bool, searchInTopic bool) ([]Message, error) {
+func (f *Forum) SearchMessages(query string, authorName string, boardID string, searchInBody bool, searchInTopic bool) ([]Message, error) {
 
 	cbxBody := "0"
 	cbxSubject := "0"
@@ -399,13 +403,13 @@ func GetForum(forumUrl string, ignoreSSL bool) (*Forum, error) {
 		ignoreSSL: ignoreSSL,
 	}
 
-	mainPage, err := f.getDoc("pxmboard.php")
+	mainPage, err := f.getDoc("pxmboard.php?mode=boardlist")
 	if err != nil {
 		return nil, err
 	}
 	var boards []Board
 
-	mainPage.Find("#norm > a").Each(func(index int, item *goquery.Selection) {
+	mainPage.Find("td > a[href*='mode=board']").Each(func(index int, item *goquery.Selection) {
 		href, _ := item.Attr("href")
 
 		hrefURL, err := url.Parse(href)
@@ -432,12 +436,15 @@ func GetForum(forumUrl string, ignoreSSL bool) (*Forum, error) {
 }
 
 // GetBoard fetches a Board like Smalltalk and the list of threads
-func (f *Forum) GetBoard(boardID string) Board {
+func (f *Forum) GetBoard(boardID string) (Board, error) {
 
 	var board Board
 
 	resource := "pxmboard.php?mode=threadlist&brdid=" + boardID + "&sortorder=last"
-	doc, _ := f.getDoc(resource)
+	doc, err := f.getDoc(resource)
+	if err != nil {
+		return Board{}, err
+	}
 
 	board.Title = doc.Find(".currentBoard > span").Text()
 	board.ID = boardID
@@ -485,5 +492,5 @@ func (f *Forum) GetBoard(boardID string) Board {
 		board.Threads[i] = t
 	})
 
-	return board
+	return board, nil
 }

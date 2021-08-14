@@ -1,6 +1,7 @@
-package board
+package maniac
 
 import (
+	"github.com/snipem/maniacforum/board"
 	"log"
 	"os"
 	"strings"
@@ -9,11 +10,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var f *Forum
+var f *board.Forum
 
 func TestMain(m *testing.M) {
 	var err error
-	f, err = GetForum(DefaultBoardURL, false)
+	f, err = board.GetForum(board.DefaultBoardURL, false)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -51,7 +52,7 @@ func TestBoard(t *testing.T) {
 }
 
 func TestThread(t *testing.T) {
-	thread := f.GetThread("173448", "1")
+	thread, _ := f.GetThread("173448", "1")
 	if len(thread.Messages) == 0 {
 		t.Errorf("No messages returned")
 	}
@@ -90,7 +91,7 @@ func TestSearch(t *testing.T) {
 
 	query := "Maniacforum Demake"
 	authorName := "snimat"
-	messages, err := f.searchMessages(query, authorName, "-1", false, true)
+	messages, err := f.SearchMessages(query, authorName, "-1", false, true)
 	assert.Nil(t, err)
 
 	assert.Greater(t, len(messages), 0)
@@ -102,7 +103,7 @@ func TestSearchEmptyResult(t *testing.T) {
 
 	query := "Query for user that hopefully will never exist"
 	authorName := "hopefully this user will never exist"
-	messages, err := f.searchMessages(query, authorName, "-1", false, true)
+	messages, err := f.SearchMessages(query, authorName, "-1", false, true)
 	assert.Nil(t, err)
 
 	assert.Equal(t, len(messages), 0)

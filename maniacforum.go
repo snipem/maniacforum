@@ -181,7 +181,7 @@ func (mf *maniacforum) loadThread() {
 		log.Print(err)
 	}
 
-	mf.active.threads = mf.active.forum.GetThread(mf.active.board.Threads[mf.ui.boardPanel.SelectedRow].ID, mf.active.board.ID)
+	mf.active.threads, _ = mf.active.forum.GetThread(mf.active.board.Threads[mf.ui.boardPanel.SelectedRow].ID, mf.active.board.ID)
 	mf.ui.threadPanel.SelectedRow = 0
 
 	mf.renderThread()
